@@ -9,10 +9,24 @@
     <version>1.0</version>
     
     <dependencies>
+        <!-- Crawler4j. -->
         <dependency>
             <groupId>edu.uci.ics</groupId>
             <artifactId>crawler4j</artifactId>
             <version>4.3</version>
+        </dependency>
+        
+        <!-- Stanford CoreNLP. -->
+        <dependency>
+            <groupId>edu.stanford.nlp</groupId>
+            <artifactId>stanford-corenlp</artifactId>
+            <version>3.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.stanford.nlp</groupId>
+            <artifactId>stanford-corenlp</artifactId>
+            <version>3.8.0</version>
+            <classifier>models</classifier>
         </dependency>
     </dependencies>
     

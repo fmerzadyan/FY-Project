@@ -4,14 +4,20 @@ import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static java.util.regex.Pattern.*;
+import static java.util.regex.Pattern.compile;
 
 public class Crawler extends WebCrawler {
     
+    /**
+     * List of file extensions to filter out urls which are non-text, non-readable resources.
+     */
+    // TODO: add more filters.
     private final static Pattern FILTERS = compile(".*(\\.(css|js|gif|jpg"
             + "|png|mp3|mp4|zip|gz))$");
     
@@ -28,8 +34,8 @@ public class Crawler extends WebCrawler {
     @Override
     public boolean shouldVisit(Page referringPage, WebURL url) {
         String href = url.getURL().toLowerCase();
-        return !FILTERS.matcher(href).matches()
-                && href.startsWith("http://www.ics.uci.edu/");
+        return !FILTERS.matcher(href).matches();
+        // TODO: narrow the conditions for selecting pages to visit and process for optimisation.
     }
     
     /**
@@ -43,13 +49,13 @@ public class Crawler extends WebCrawler {
         
         if (page.getParseData() instanceof HtmlParseData) {
             HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
-            String text = htmlParseData.getText();
             String html = htmlParseData.getHtml();
+            Document document = Jsoup.parseBodyFragment(html);
             Set<WebURL> links = htmlParseData.getOutgoingUrls();
-            
-            System.out.println("Text length: " + text.length());
+
             System.out.println("Html length: " + html.length());
             System.out.println("Number of outgoing links: " + links.size());
+            // System.out.println("Html document: " + document.body());
         }
     }
 }

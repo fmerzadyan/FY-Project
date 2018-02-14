@@ -44,10 +44,11 @@ public class CrawlerManager {
          * URLs that are fetched and then the crawler starts following links
          * which are found in these pages
          */
-        controller.addSeed("http://www.ics.uci.edu/~lopes/");
-        controller.addSeed("http://www.ics.uci.edu/~welling/");
-        controller.addSeed("http://www.ics.uci.edu/");
-        
+        // TODO: find suitable seed URLs.
+        controller.addSeed("http://www.wsj.com");
+        controller.addSeed("https://www.economist.com");
+        controller.addSeed("https://www.ft.com");
+    
         /*
          * Start the crawl. This is a blocking operation, meaning that your code
          * will reach the line after this only when crawling is finished.
