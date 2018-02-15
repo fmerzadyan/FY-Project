@@ -8,11 +8,17 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.compile;
 
 public class Crawler extends WebCrawler {
+    private AtomicInteger linksVisited;
+    
+    public Crawler() {
+        linksVisited = new AtomicInteger(0);
+    }
     
     /**
      * List of file extensions to filter out urls which are non-text, non-readable resources.
@@ -36,6 +42,7 @@ public class Crawler extends WebCrawler {
         String href = url.getURL().toLowerCase();
         return !FILTERS.matcher(href).matches();
         // TODO: narrow the conditions for selecting pages to visit and process for optimisation.
+        // e.g. select specific companies, indexes, stock exchanges, countries, regions, etc.
     }
     
     /**
@@ -45,17 +52,19 @@ public class Crawler extends WebCrawler {
     @Override
     public void visit(Page page) {
         String url = page.getWebURL().getURL();
-        System.out.println("URL: " + url);
+        System.out.println("links visited: " + linksVisited.incrementAndGet() + " URL: " + url);
         
         if (page.getParseData() instanceof HtmlParseData) {
             HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
             String html = htmlParseData.getHtml();
             Document document = Jsoup.parseBodyFragment(html);
             Set<WebURL> links = htmlParseData.getOutgoingUrls();
-
-            System.out.println("Html length: " + html.length());
+            
             System.out.println("Number of outgoing links: " + links.size());
-            // System.out.println("Html document: " + document.body());
+            System.out.println("Text length: " + document.text().length());
+            // System.out.println(document.text());
+            
+            SentientAnalyser.analyse(document.text());
         }
     }
 }
