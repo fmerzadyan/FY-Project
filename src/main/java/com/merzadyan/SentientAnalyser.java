@@ -23,7 +23,7 @@ import static edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import static edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.EnhancedDependenciesAnnotation;
 
 public class SentientAnalyser {
-    public static void analyse(String text) {
+    public static void analyse(String text, WordRegistry wordRegistry, NegPosBalance negPosBalance) {
         // TODO: prevent an OOM (Out Of Memory) issue when the input text is too large.
         if (text.length() > 300000) {
             return;
@@ -50,6 +50,13 @@ public class SentientAnalyser {
                 System.out.println("word: " + word + " POS: " + partOfSpeech + " NER: " + namedEntityRecognition +
                         " lemma: " + token.get(CoreAnnotations.LemmaAnnotation.class));
                 String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
+                
+                // TODO: add positive/negative words in to the word registry in their respective sets.
+                if (isPositive(lemma, wordRegistry)) {
+                    negPosBalance.positive();
+                } else if (isNegative(lemma, wordRegistry)) {
+                    negPosBalance.negative();
+                }
             }
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             SemanticGraph dependencies = sentence.get(EnhancedDependenciesAnnotation.class);
@@ -58,8 +65,11 @@ public class SentientAnalyser {
         Map<Integer, CorefChain> graph = document.get(CorefChainAnnotation.class);
     }
     
-    public static void main(String[] args) {
-        final String input = "Frankie kicks the ball into the goal and scores one point which puts his team in the lead.";
-        SentientAnalyser.analyse(input);
+    public static boolean isPositive(String word, WordRegistry wordRegistry) {
+        return word != null && !word.isEmpty() && wordRegistry != null && wordRegistry.getPositiveSet().contains(word);
+    }
+    
+    public static boolean isNegative(String word, WordRegistry wordRegistry) {
+        return word != null && !word.isEmpty() && wordRegistry != null && wordRegistry.getNegativeSet().contains(word);
     }
 }

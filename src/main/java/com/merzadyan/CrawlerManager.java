@@ -54,10 +54,9 @@ public class CrawlerManager {
         // TODO: seed URL management - e.g. separate class?
         controller.addSeed("https://uk.finance.yahoo.com/");
         
-        /*
-         * Start the crawl. This is a blocking operation, meaning that your code
-         * will reach the line after this only when crawling is finished.
-         */
-        controller.start(Crawler.class, numberOfCrawlers);
+        // A crawler factory is required to feed data into the crawler.
+        CrawlerFactory crawlerFactory = new CrawlerFactory(new NegPosBalance());
+        // Runs the crawlers in a non-blocking thread.
+        controller.startNonBlocking(crawlerFactory, numberOfCrawlers);
     }
 }

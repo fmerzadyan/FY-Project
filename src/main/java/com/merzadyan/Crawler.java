@@ -8,23 +8,32 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.compile;
 
 public class Crawler extends WebCrawler {
-    private AtomicInteger linksVisited;
+    private int linksVisited;
+    private WordRegistry wordRegistry;
+    private NegPosBalance negPosBalance;
     
-    public Crawler() {
-        linksVisited = new AtomicInteger(0);
+    public Crawler(NegPosBalance negPosBalance) {
+        linksVisited = 0;
+        
+        wordRegistry = WordRegistry.getInstance();
+        
+        if (negPosBalance == null) {
+            this.negPosBalance = new NegPosBalance();
+        } else {
+            this.negPosBalance = negPosBalance;
+        }
     }
     
     /**
      * List of file extensions to filter out urls which are non-text, non-readable resources.
      */
     // TODO: add more filters.
-    private final static Pattern FILTERS = compile(".*(\\.(css|js|gif|jpg"
+    private static final Pattern FILTERS = compile(".*(\\.(css|js|gif|jpg"
             + "|png|mp3|mp4|zip|gz))$");
     
     /**
@@ -52,7 +61,8 @@ public class Crawler extends WebCrawler {
     @Override
     public void visit(Page page) {
         String url = page.getWebURL().getURL();
-        System.out.println("links visited: " + linksVisited.incrementAndGet() + " URL: " + url);
+        // ++linksVisited has a prefix operation - increment variable and get value.
+        System.out.println("links visited: " + ++linksVisited + " URL: " + url);
         
         if (page.getParseData() instanceof HtmlParseData) {
             HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
@@ -64,7 +74,7 @@ public class Crawler extends WebCrawler {
             System.out.println("Text length: " + document.text().length());
             // System.out.println(document.text());
             
-            SentientAnalyser.analyse(document.text());
+            SentientAnalyser.analyse(document.text(), wordRegistry, negPosBalance);
         }
     }
 }
