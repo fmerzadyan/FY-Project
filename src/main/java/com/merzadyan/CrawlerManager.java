@@ -28,7 +28,6 @@ public class CrawlerManager {
         config.setIncludeBinaryContentInCrawling(false);
         // Resumable crawling continue crawling in the event of crawler process timing out.
         // Resumable crawling is set to false by default.
-        // TODO: for faster and more convenient test/debugging, set resumable crawling to false.
         // since would not have to delete the data dump for fresh run of program.
         config.setResumableCrawling(true);
         // User agent string represents crawler to the web servers.
@@ -46,7 +45,7 @@ public class CrawlerManager {
         CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
         
         /*
-         * For each crawl, you need to add some seed urls. These are the first
+         * For each crawl, you need to addIfNotZero some seed urls. These are the first
          * URLs that are fetched and then the crawler starts following links
          * which are found in these pages
          */
@@ -55,8 +54,12 @@ public class CrawlerManager {
         controller.addSeed("https://uk.finance.yahoo.com/");
         
         // A crawler factory is required to feed data into the crawler.
-        CrawlerFactory crawlerFactory = new CrawlerFactory(new NegPosBalance());
+        CrawlerFactory crawlerFactory = new CrawlerFactory();
         // Runs the crawlers in a non-blocking thread.
         controller.startNonBlocking(crawlerFactory, numberOfCrawlers);
+        
+        // Shuts down the crawlers.
+        // controller.shutdown();
+        // controller.waitUntilFinish();
     }
 }

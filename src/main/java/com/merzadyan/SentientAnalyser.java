@@ -5,26 +5,42 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
+import javafx.util.Pair;
 
 import java.util.List;
 import java.util.Properties;
 
-import static edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
-import static edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import static edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import static edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import static edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 
 public class SentientAnalyser {
-    public static void analyse(String text, WordRegistry wordRegistry, NegPosBalance negPosBalance) {
-        // TODO: prevent an OOM (Out Of Memory) issue when the input text is too large.
-        if (text.length() > 300000) {
-            return;
+    // Is only interested in any stocks listed in the SOIRegistry.
+    public static Pair<Stock, PolarityScale> analysePolarity(String text, SOIRegistry soiRegistry, WordRegistry wordRegistry,
+                                                             PolarityScale polarityScale) {
+        if (text == null || text.isEmpty()) {
+            return null;
         }
         
-        // Creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, coreference resolution, etc.
+        if (soiRegistry == null) {
+            return null;
+        }
+        
+        if (wordRegistry == null) {
+            return null;
+        }
+        
+        if (polarityScale == null) {
+            return null;
+        }
+        
+        // TODO: prevent an OOM (Out Of Memory) issue when the input text is too large.
+        if (text.length() > 300000) {
+            return null;
+        }
+        
+        // Creates a StanfordCoreNLP object, with POS tagging, lemmatization, etc.
         Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
+        props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
         
         // Create an empty Annotation just with the given text.
@@ -35,23 +51,35 @@ public class SentientAnalyser {
         
         List<CoreMap> sentences = document.get(SentencesAnnotation.class);
         
+        Stock stock = new Stock();
         for (CoreMap sentence : sentences) {
             for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
-                String word = token.get(TextAnnotation.class);
-                String partOfSpeech = token.get(PartOfSpeechAnnotation.class);
-                String namedEntityRecognition = token.get(NamedEntityTagAnnotation.class);
-                System.out.println("word: " + word + " POS: " + partOfSpeech + " NER: " + namedEntityRecognition +
-                        " lemma: " + token.get(CoreAnnotations.LemmaAnnotation.class));
                 String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
+                String normalisedNER = token.get(CoreAnnotations.NormalizedNamedEntityTagAnnotation.class);
                 
-                // TODO: add positive/negative words in to the word registry in their respective sets.
+                // TODO: extremely basic semantic analysis - consider evaluation of entire phrases and terms.
                 if (isPositive(lemma, wordRegistry)) {
-                    negPosBalance.positive();
+                    polarityScale.positive();
                 } else if (isNegative(lemma, wordRegistry)) {
-                    negPosBalance.negative();
+                    polarityScale.negative();
+                }
+                
+                if (stock.getSymbol() == null && normalisedNER != null && !normalisedNER.isEmpty()) {
+                    stock.setSymbol(normalisedNER);
+                    if (!soiRegistry.getStockSet().contains(stock)) {
+                        stock.setSymbol(null);
+                    }
                 }
             }
         }
+        
+        // TODO: associate company to symbol/company to stock exchange.
+        
+        if (stock.getSymbol() == null) {
+            return null;
+        }
+        
+        return new Pair<Stock, PolarityScale>(stock, polarityScale);
     }
     
     public static boolean isPositive(String word, WordRegistry wordRegistry) {

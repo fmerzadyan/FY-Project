@@ -4,9 +4,12 @@ import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
+import javafx.util.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -14,25 +17,23 @@ import static java.util.regex.Pattern.compile;
 
 public class Crawler extends WebCrawler {
     private int linksVisited;
+    private SOIRegistry soiRegistry;
     private WordRegistry wordRegistry;
-    private NegPosBalance negPosBalance;
+    private HashSet<TrendIndicator> trendIndicatorHashSet;
+    private HashSet<Forecast> forecastHashSet;
     
-    public Crawler(NegPosBalance negPosBalance) {
+    Crawler() {
         linksVisited = 0;
-        
+        soiRegistry = SOIRegistry.getInstance();
         wordRegistry = WordRegistry.getInstance();
-        
-        if (negPosBalance == null) {
-            this.negPosBalance = new NegPosBalance();
-        } else {
-            this.negPosBalance = negPosBalance;
-        }
+        trendIndicatorHashSet = new HashSet<>();
+        forecastHashSet = new HashSet<>();
     }
     
     /**
      * List of file extensions to filter out urls which are non-text, non-readable resources.
      */
-    // TODO: add more filters.
+    // TODO: addIfNotZero more filters.
     private static final Pattern FILTERS = compile(".*(\\.(css|js|gif|jpg"
             + "|png|mp3|mp4|zip|gz))$");
     
@@ -52,6 +53,7 @@ public class Crawler extends WebCrawler {
         return !FILTERS.matcher(href).matches();
         // TODO: narrow the conditions for selecting pages to visit and process for optimisation.
         // e.g. select specific companies, indexes, stock exchanges, countries, regions, etc.
+        // TODO: research string search algorithms for finding companies, ticker symbols, etc in text.
     }
     
     /**
@@ -74,7 +76,35 @@ public class Crawler extends WebCrawler {
             System.out.println("Text length: " + document.text().length());
             // System.out.println(document.text());
             
-            SentientAnalyser.analyse(document.text(), wordRegistry, negPosBalance);
+            Pair<Stock, PolarityScale> pair = SentientAnalyser.analysePolarity(document.text(), soiRegistry, wordRegistry,
+                    new PolarityScale());
+            if (pair != null && pair.getKey() != null && pair.getValue() != null) {
+                TrendIndicator list = new TrendIndicator(pair.getKey(), new ArrayList<>());
+                list.addIfNotZero(pair.getValue().getPolarity());
+                trendIndicatorHashSet.add(list);
+            }
         }
+        
+        // TODO: remove pesky/unnecessary logs in the console output from crawler4j and Stanford CoreNLP.
+    }
+    
+    /**
+     * Called just before the termination of the current
+     * crawler instance. It can be used for persisting in-memory data or other
+     * finalization tasks.
+     */
+    @Override
+    public void onBeforeExit() {
+        // TODO: display forecastHashSet.
+        for (TrendIndicator trendIndicator : trendIndicatorHashSet) {
+            if (trendIndicator != null) {
+                forecastHashSet.add(trendIndicator.getForecast());
+            }
+        }
+    }
+    
+    @Override
+    protected void onPageBiggerThanMaxSize(String urlStr, long pageSize) {
+    
     }
 }
