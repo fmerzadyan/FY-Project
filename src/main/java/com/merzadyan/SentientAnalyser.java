@@ -1,26 +1,19 @@
 package com.merzadyan;
 
-import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.semgraph.SemanticGraph;
-import edu.stanford.nlp.trees.Tree;
-import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import static edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
 import static edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import static edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import static edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import static edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import static edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import static edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.EnhancedDependenciesAnnotation;
 
 public class SentientAnalyser {
     public static void analyse(String text, WordRegistry wordRegistry, NegPosBalance negPosBalance) {
@@ -58,11 +51,7 @@ public class SentientAnalyser {
                     negPosBalance.negative();
                 }
             }
-            Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-            SemanticGraph dependencies = sentence.get(EnhancedDependenciesAnnotation.class);
         }
-        
-        Map<Integer, CorefChain> graph = document.get(CorefChainAnnotation.class);
     }
     
     public static boolean isPositive(String word, WordRegistry wordRegistry) {

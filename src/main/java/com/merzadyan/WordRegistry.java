@@ -29,4 +29,15 @@ public class WordRegistry {
     public HashSet<String> getNegativeSet() {
         return negativeSet;
     }
+    
+    // Mocking the dictionaries for now. TODO: find better method.
+    private void populatePositiveSet() {
+        // Considering the test data.
+        
+    }
+    
+    // Mocking the dictionaries for now. TODO: find better method.
+    private void populateNegativeSet() {
+    
+    }
 }
