@@ -1,5 +1,7 @@
 package com.merzadyan;
 
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,6 +12,8 @@ import java.util.HashSet;
  * Contains sets of positive and negative words. It is used to identify positivity or negativity of a given word.
  */
 public class WordRegistry {
+    private static final Logger LOGGER = Logger.getLogger(WordRegistry.class.getName());
+    
     // TODO: addIfNotZero more positive/negative words in to the word registry in their respective sets.
     private static final WordRegistry instance = new WordRegistry();
     
@@ -36,12 +40,12 @@ public class WordRegistry {
     
     private void populatePositiveSet() {
         if (!isNotNullAndNotEmpty(positiveSetFilePath)) {
-            System.out.println("Error: positive-set file is not set.");
+            LOGGER.debug("Error: positive-set file is not set.");
             return;
         }
         
         if (!fileExists(positiveSetFilePath)) {
-            System.out.println("Error: positive-set file does not exist.");
+            LOGGER.debug("Error: positive-set file does not exist.");
             return;
         }
         
@@ -50,12 +54,12 @@ public class WordRegistry {
     
     private void populateNegativeSet() {
         if (!isNotNullAndNotEmpty(negativeSetFilePath)) {
-            System.out.println("Error: negative-set file is not set.");
+            LOGGER.debug("Error: negative-set file is not set.");
             return;
         }
         
         if (!fileExists(negativeSetFilePath)) {
-            System.out.println("Error: negative-set file does not exist.");
+            LOGGER.debug("Error: negative-set file does not exist.");
             return;
         }
         
@@ -70,12 +74,12 @@ public class WordRegistry {
      */
     private HashSet<String> extractWords(String setFilePath) {
         if (!isNotNullAndNotEmpty(setFilePath)) {
-            System.out.println("Error: file is not set.");
+            LOGGER.debug("Error: file is not set.");
             return null;
         }
         
         if (!fileExists(setFilePath)) {
-            System.out.println("Error: " + setFilePath + " does not exist.");
+            LOGGER.debug("Error: " + setFilePath + " does not exist.");
             return null;
         }
         
@@ -91,7 +95,7 @@ public class WordRegistry {
                 set.add(line.trim().toLowerCase());
             }
         } catch (IOException ioEx) {
-            System.out.println("Could not read file: " + ioEx);
+            LOGGER.debug("Could not read file: " + ioEx);
         }
         
         return set;

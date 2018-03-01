@@ -5,6 +5,7 @@ import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
 import javafx.util.Pair;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -16,7 +17,10 @@ import java.util.regex.Pattern;
 import static java.util.regex.Pattern.compile;
 
 public class Crawler extends WebCrawler {
+    private static final Logger LOGGER = Logger.getLogger(Crawler.class.getName());
+    
     private int linksVisited;
+    
     private SOIRegistry soiRegistry;
     private WordRegistry wordRegistry;
     private HashSet<TrendIndicator> trendIndicatorHashSet;
@@ -64,7 +68,7 @@ public class Crawler extends WebCrawler {
     public void visit(Page page) {
         String url = page.getWebURL().getURL();
         // ++linksVisited has a prefix operation - increment variable and get value.
-        System.out.println("links visited: " + ++linksVisited + " URL: " + url);
+        LOGGER.debug("links visited: " + ++linksVisited + " URL: " + url);
         
         if (page.getParseData() instanceof HtmlParseData) {
             HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
@@ -72,9 +76,9 @@ public class Crawler extends WebCrawler {
             Document document = Jsoup.parseBodyFragment(html);
             Set<WebURL> links = htmlParseData.getOutgoingUrls();
             
-            System.out.println("Number of outgoing links: " + links.size());
-            System.out.println("Text length: " + document.text().length());
-            // System.out.println(document.text());
+            LOGGER.debug("Number of outgoing links: " + links.size());
+            LOGGER.debug("Text length: " + document.text().length());
+            // LOGGER.debug(document.text());
             
             Pair<Stock, PolarityScale> pair = SentientAnalyser.analysePolarity(document.text(), soiRegistry, wordRegistry,
                     new PolarityScale());
