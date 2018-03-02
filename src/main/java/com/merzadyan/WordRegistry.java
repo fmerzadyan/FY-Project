@@ -3,7 +3,6 @@ package com.merzadyan;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
@@ -39,12 +38,12 @@ public class WordRegistry {
     }
     
     private void populatePositiveSet() {
-        if (!isNotNullAndNotEmpty(positiveSetFilePath)) {
+        if (!FileOp.isNotNullAndNotEmpty(positiveSetFilePath)) {
             LOGGER.debug("Error: positive-set file is not set.");
             return;
         }
         
-        if (!fileExists(positiveSetFilePath)) {
+        if (!FileOp.fileExists(positiveSetFilePath)) {
             LOGGER.debug("Error: positive-set file does not exist.");
             return;
         }
@@ -53,12 +52,12 @@ public class WordRegistry {
     }
     
     private void populateNegativeSet() {
-        if (!isNotNullAndNotEmpty(negativeSetFilePath)) {
+        if (!FileOp.isNotNullAndNotEmpty(negativeSetFilePath)) {
             LOGGER.debug("Error: negative-set file is not set.");
             return;
         }
         
-        if (!fileExists(negativeSetFilePath)) {
+        if (!FileOp.fileExists(negativeSetFilePath)) {
             LOGGER.debug("Error: negative-set file does not exist.");
             return;
         }
@@ -73,12 +72,12 @@ public class WordRegistry {
      * @return set of words.
      */
     private HashSet<String> extractWords(String setFilePath) {
-        if (!isNotNullAndNotEmpty(setFilePath)) {
+        if (!FileOp.isNotNullAndNotEmpty(setFilePath)) {
             LOGGER.debug("Error: file is not set.");
             return null;
         }
         
-        if (!fileExists(setFilePath)) {
+        if (!FileOp.fileExists(setFilePath)) {
             LOGGER.debug("Error: " + setFilePath + " does not exist.");
             return null;
         }
@@ -101,36 +100,11 @@ public class WordRegistry {
         return set;
     }
     
-    private boolean isNotNullAndNotEmpty(String text) {
-        return text != null && !text.isEmpty();
-    }
-    
-    private boolean fileExists(String filePath) {
-        File file = new File(filePath);
-        return !file.isDirectory() && file.exists();
-    }
-    
     public HashSet<String> getPositiveSet() {
         return positiveSet;
     }
     
     public HashSet<String> getNegativeSet() {
         return negativeSet;
-    }
-    
-    public static String getPositiveSetFilePath() {
-        return positiveSetFilePath;
-    }
-    
-    public static void setPositiveSetFilePath(String positiveSetFilePath) {
-        WordRegistry.positiveSetFilePath = positiveSetFilePath;
-    }
-    
-    public static String getNegativeSetFilePath() {
-        return negativeSetFilePath;
-    }
-    
-    public static void setNegativeSetFilePath(String negativeSetFilePath) {
-        WordRegistry.negativeSetFilePath = negativeSetFilePath;
     }
 }
