@@ -1,0 +1,44 @@
+/* Primary colour. */
+.primary {
+    -fx-background-color: black !important;
+}
+
+/* Secondary colour. */
+.secondary {
+    -fx-background-color: gold !important;
+}
+
+.text-field {
+    -fx-text-box-border: gold;
+    -fx-focus-color: black;
+}
+
+.button {
+    -fx-background-color: black;
+    -fx-font-weight: bold;
+    -fx-text-fill: gold;
+}
+
+.split-pane {
+    -fx-background-color: gold;
+}
+
+.split-pane:horizontal > .split-pane-divider {
+    -fx-background-color: gold;
+}
+
+.split-pane:vertical > .split-pane-divider {
+    -fx-background-color: gold;
+}
+
+.progress-indicator {
+    -fx-progress-color: red;
+}
+
+.slider .thumb {
+    -fx-background-color: black;
+}
+
+.slider .track {
+    -fx-background-color: #ff9700;
+}
