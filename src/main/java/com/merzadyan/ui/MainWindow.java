@@ -39,8 +39,6 @@ public class MainWindow extends Application {
     
     /**
      * Called after @FXML annotated members have been injected.
-     *
-     * @throws Exception
      */
     @FXML
     public void initialize() {

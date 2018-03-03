@@ -19,6 +19,30 @@
     -fx-text-fill: gold;
 }
 
+.tab-pane *.tab-header-area *.tab-header-background {
+    -fx-background-color:transparent;
+}
+
+.tab-pane {
+    -fx-tab-min-width:140px;
+    -fx-tab-max-width:140px;
+    -fx-tab-min-height:50px;
+    -fx-tab-max-height:50px;
+}
+
+.tab {
+    -fx-font-size: 16;
+    -fx-background-color:#ffac00 ;
+}
+
+.tab:selected {
+    -fx-background-color: #ff9700;
+}
+
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
 .split-pane {
     -fx-background-color: gold;
 }
