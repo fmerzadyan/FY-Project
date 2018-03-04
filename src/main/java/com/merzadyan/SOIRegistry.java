@@ -30,12 +30,12 @@ public class SOIRegistry {
     }
     
     private HashSet<Stock> extractStocks(String soiFilePath) {
-        if (!FileOp.isNotNullAndNotEmpty(soiFilePath)) {
+        if (!CommonOp.isNotNullAndNotEmpty(soiFilePath)) {
             LOGGER.debug("Error: file is not set.");
             return null;
         }
         
-        if (!FileOp.fileExists(soiFilePath)) {
+        if (!CommonOp.fileExists(soiFilePath)) {
             LOGGER.debug("Error: " + soiFilePath + " does not exist.");
             return null;
         }

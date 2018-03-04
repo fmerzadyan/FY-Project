@@ -93,7 +93,7 @@
                         <VBox prefHeight="200.0" prefWidth="100.0">
                             <children>
                                 <Label text="User Agent Name:"/>
-                                <TextField/>
+                                <TextField fx:id="userAgentNameTextField"/>
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
@@ -102,7 +102,7 @@
                         <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
                             <children>
                                 <Label text="Data Dump:"/>
-                                <TextField/>
+                                <TextField fx:id="dataDumpTextField"/>
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
@@ -111,8 +111,9 @@
                         <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="2">
                             <children>
                                 <Label text="Number of Crawlers:"/>
-                                <Slider blockIncrement="1.0" majorTickUnit="1.0" max="8.0" min="1.0" minorTickCount="0"
-                                        showTickLabels="true" showTickMarks="true" snapToTicks="true" value="4.0"/>
+                                <Slider fx:id="numberOfCrawlersSlider" blockIncrement="1.0" majorTickUnit="1.0"
+                                        max="8.0" min="1.0" minorTickCount="0" showTickLabels="true"
+                                        showTickMarks="true" snapToTicks="true" value="4.0"/>
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
@@ -121,8 +122,9 @@
                         <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="3">
                             <children>
                                 <Label text="Max Depth of Crawling:"/>
-                                <Slider blockIncrement="25.0" majorTickUnit="20.0" min="1.0" minorTickCount="5"
-                                        showTickLabels="true" showTickMarks="true" snapToTicks="true" value="50.0"/>
+                                <Slider fx:id="maxDepthOfCrawlingSlider" blockIncrement="25.0" majorTickUnit="20.0"
+                                        min="1.0" minorTickCount="5" showTickLabels="true" showTickMarks="true"
+                                        snapToTicks="true" value="50.0"/>
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
@@ -131,8 +133,9 @@
                         <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="4">
                             <children>
                                 <Label text="Politeness Delay (ms):"/>
-                                <Slider majorTickUnit="100.0" max="500.0" min="100.0" minorTickCount="10"
-                                        showTickLabels="true" showTickMarks="true" snapToTicks="true" value="200.0"/>
+                                <Slider fx:id="politenessDelaySlider" majorTickUnit="100.0" max="500.0" min="100.0"
+                                        minorTickCount="10" showTickLabels="true" showTickMarks="true"
+                                        snapToTicks="true" value="200.0"/>
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
@@ -173,11 +176,12 @@
                         </VBox>
                         <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                             <right>
-                                <Button mnemonicParsing="false" text="Save" textAlignment="CENTER"
-                                        BorderPane.alignment="CENTER"/>
+                                <Button fx:id="saveBtn" mnemonicParsing="false" onAction="#saveConfigs" text="Save"
+                                        textAlignment="CENTER" BorderPane.alignment="CENTER"/>
                             </right>
                             <left>
-                                <Button cancelButton="true" defaultButton="true" mnemonicParsing="false" text="Reset"
+                                <Button fx:id="resetBtn" cancelButton="true" defaultButton="true"
+                                        mnemonicParsing="false" onAction="#resetConfigs" text="Reset"
                                         textAlignment="CENTER" BorderPane.alignment="CENTER"/>
                             </left>
                             <padding>

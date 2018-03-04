@@ -38,12 +38,12 @@ public class WordRegistry {
     }
     
     private void populatePositiveSet() {
-        if (!FileOp.isNotNullAndNotEmpty(positiveSetFilePath)) {
+        if (!CommonOp.isNotNullAndNotEmpty(positiveSetFilePath)) {
             LOGGER.debug("Error: positive-set file is not set.");
             return;
         }
         
-        if (!FileOp.fileExists(positiveSetFilePath)) {
+        if (!CommonOp.fileExists(positiveSetFilePath)) {
             LOGGER.debug("Error: positive-set file does not exist.");
             return;
         }
@@ -52,12 +52,12 @@ public class WordRegistry {
     }
     
     private void populateNegativeSet() {
-        if (!FileOp.isNotNullAndNotEmpty(negativeSetFilePath)) {
+        if (!CommonOp.isNotNullAndNotEmpty(negativeSetFilePath)) {
             LOGGER.debug("Error: negative-set file is not set.");
             return;
         }
         
-        if (!FileOp.fileExists(negativeSetFilePath)) {
+        if (!CommonOp.fileExists(negativeSetFilePath)) {
             LOGGER.debug("Error: negative-set file does not exist.");
             return;
         }
@@ -72,12 +72,12 @@ public class WordRegistry {
      * @return set of words.
      */
     private HashSet<String> extractWords(String setFilePath) {
-        if (!FileOp.isNotNullAndNotEmpty(setFilePath)) {
+        if (!CommonOp.isNotNullAndNotEmpty(setFilePath)) {
             LOGGER.debug("Error: file is not set.");
             return null;
         }
         
-        if (!FileOp.fileExists(setFilePath)) {
+        if (!CommonOp.fileExists(setFilePath)) {
             LOGGER.debug("Error: " + setFilePath + " does not exist.");
             return null;
         }
