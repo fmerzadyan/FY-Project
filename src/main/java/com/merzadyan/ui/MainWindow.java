@@ -100,6 +100,9 @@ public class MainWindow extends Application {
         try {
             // TODO: TextArea cannot handle vast amount of input text from log4j and becomes unresponsive.
             // See https://stackoverflow.com/questions/33078241/javafx-application-freeze-when-i-append-log4j-to-textarea
+            // TODO: different approach - instead of reducing output (muting crawler4j/Stanford logs) OR increasing
+            // buffer size of GUI console: keep one non-static instance of the GUI console and retrieve my logs i.e.
+            // relevant tracing info and analysis results?
             // crawlerManager.startNonBlockingCrawl();
         } catch (Exception ex) {
             LOGGER.debug(ex);

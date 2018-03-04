@@ -73,8 +73,6 @@ public class SentientAnalyser {
             }
         }
         
-        // TODO: associate company to symbol/company to stock exchange.
-        
         if (stock.getSymbol() == null) {
             return null;
         }
