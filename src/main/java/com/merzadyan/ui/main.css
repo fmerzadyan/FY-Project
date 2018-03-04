@@ -8,9 +8,13 @@
     -fx-background-color: gold !important;
 }
 
-.text-field {
-    -fx-text-box-border: gold;
-    -fx-focus-color: black;
+.text-area {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+.text-area .content {
+    -fx-background-color: black;
 }
 
 .button {

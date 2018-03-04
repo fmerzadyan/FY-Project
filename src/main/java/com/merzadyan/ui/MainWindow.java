@@ -1,12 +1,14 @@
 package com.merzadyan.ui;
 
 import com.merzadyan.CrawlerManager;
+import com.merzadyan.TextAreaAppender;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
@@ -26,6 +28,9 @@ public class MainWindow extends Application {
     @FXML
     private Slider resumableCrawlingSlider;
     
+    @FXML
+    private TextArea consoleTextArea;
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         setUserAgentStylesheet(STYLESHEET_MODENA);
@@ -42,6 +47,9 @@ public class MainWindow extends Application {
      */
     @FXML
     public void initialize() {
+        TextAreaAppender.setTextArea(consoleTextArea);
+        consoleTextArea.appendText("Started application.\n");
+        
         // Use on, off values instead of 0, 1 in sliders.
         StringConverter<Double> binaryLabelFormat = (new StringConverter<Double>() {
             @Override
@@ -78,6 +86,8 @@ public class MainWindow extends Application {
         }
         
         try {
+            // TODO: TextArea cannot handle vast amount of input text from log4j and becomes unresponsive.
+            // See https://stackoverflow.com/questions/33078241/javafx-application-freeze-when-i-append-log4j-to-textarea
             // crawlerManager.startNonBlockingCrawl();
         } catch (Exception ex) {
             LOGGER.debug(ex);
