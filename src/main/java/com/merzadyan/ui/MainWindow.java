@@ -8,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -21,8 +20,6 @@ public class MainWindow extends Application {
     
     private CrawlerManager crawlerManager;
     
-    @FXML
-    private ProgressIndicator crawlingProgInd;
     @FXML
     private TextArea consoleTextArea;
     
@@ -92,18 +89,15 @@ public class MainWindow extends Application {
     
     public void startCrawlers() {
         LOGGER.debug("startCrawlers");
-        if (crawlingProgInd != null) {
-            crawlingProgInd.setDisable(false);
-            crawlingProgInd.setVisible(true);
-        }
-        
         try {
             // TODO: TextArea cannot handle vast amount of input text from log4j and becomes unresponsive.
             // See https://stackoverflow.com/questions/33078241/javafx-application-freeze-when-i-append-log4j-to-textarea
             // TODO: different approach - instead of reducing output (muting crawler4j/Stanford logs) OR increasing
             // buffer size of GUI console: keep one non-static instance of the GUI console and retrieve my logs i.e.
             // relevant tracing info and analysis results?
-            // crawlerManager.startNonBlockingCrawl();
+            if (crawlerManager != null) {
+                // crawlerManager.startNonBlockingCrawl();
+            }
         } catch (Exception ex) {
             LOGGER.debug(ex);
         }
@@ -111,10 +105,8 @@ public class MainWindow extends Application {
     
     public void stopCrawlers() {
         LOGGER.debug("stopCrawlers");
-        if (crawlingProgInd != null && crawlerManager != null) {
+        if (crawlerManager != null) {
             crawlerManager.stopCrawl();
-            crawlingProgInd.setDisable(true);
-            crawlingProgInd.setVisible(false);
         }
     }
     
