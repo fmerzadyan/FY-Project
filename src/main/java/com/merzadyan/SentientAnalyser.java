@@ -51,6 +51,14 @@ public class SentientAnalyser {
         
         List<CoreMap> sentences = document.get(SentencesAnnotation.class);
         
+        // TODO: create a fine-grain sentiment classification e.g. Negative -> Somewhat negative -> Neutral -> Somewhat Positive -> Positive.
+        // TODO: put the tokens (normalised, lower-cased form) in a binary tree. [Remove HTML or other non-English].
+        // TODO: bottom-up parsing of binary tree.
+        // TODO: gather words in the binary tree in an n-gram grouping (phrases) and classify the sentiment of group.
+        // TODO: sum the polarity.
+        // TODO: return the polarity associated with the stock. IMPORTANT: ensure stock is in SOI registry.
+        // TODO: create test data to test sentient analyser's correctness and accuracy then focus on feeding sentient analyser data from the crawler.
+        
         Stock stock = new Stock();
         for (CoreMap sentence : sentences) {
             for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
