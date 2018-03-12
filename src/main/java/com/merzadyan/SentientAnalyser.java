@@ -50,7 +50,8 @@ public class SentientAnalyser {
         pipeline.annotate(document);
         
         List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-        
+    
+        // TODO: create another GUI to train the polarity of words and insert data (replace if already exists) into a database/file.
         // TODO: create a fine-grain sentiment classification e.g. Negative -> Somewhat negative -> Neutral -> Somewhat Positive -> Positive.
         // TODO: put the tokens (normalised, lower-cased form) in a binary tree. [Remove HTML or other non-English].
         // TODO: bottom-up parsing of binary tree.
