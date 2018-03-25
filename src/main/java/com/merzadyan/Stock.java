@@ -29,7 +29,11 @@ public class Stock {
     }
     
     public void setCompany(String company) {
-        this.company = company;
+        if (company != null) {
+            this.company = company.trim();
+            return;
+        }
+        this.company = null;
     }
     
     public String getSymbol() {
@@ -37,7 +41,11 @@ public class Stock {
     }
     
     public void setSymbol(String symbol) {
-        this.symbol = symbol;
+        if (symbol != null) {
+            this.symbol = symbol.trim();
+            return;
+        }
+        this.symbol = null;
     }
     
     public String getStockExchange() {
@@ -45,6 +53,10 @@ public class Stock {
     }
     
     public void setStockExchange(String stockExchange) {
-        this.stockExchange = stockExchange;
+        if (stockExchange != null) {
+            this.stockExchange = stockExchange.trim();
+            return;
+        }
+        this.stockExchange = null;
     }
 }
