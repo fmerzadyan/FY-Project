@@ -1,6 +1,8 @@
 package com.merzadyan;
 
-public class Stock {
+import java.util.Comparator;
+
+public class Stock implements Comparator {
     private String company;
     private String symbol;
     private String stockExchange;
@@ -13,6 +15,13 @@ public class Stock {
         this.company = company;
         this.symbol = symbol;
         this.stockExchange = stockExchange;
+    }
+    
+    @Override
+    public int compare(Object o1, Object o2) {
+        Stock s1 = (Stock) o1, s2 = (Stock) o2;
+        
+        return s1.getCompany().compareToIgnoreCase(s2.getCompany());
     }
     
     @Override

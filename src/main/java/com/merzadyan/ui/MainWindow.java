@@ -1,19 +1,18 @@
 package com.merzadyan.ui;
 
-import com.merzadyan.CommonOp;
-import com.merzadyan.CrawlerManager;
-import com.merzadyan.TextAreaAppender;
+import com.merzadyan.*;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
 
 public class MainWindow extends Application {
     private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
@@ -24,21 +23,25 @@ public class MainWindow extends Application {
     private TextArea consoleTextArea;
     
     @FXML
-    private TextField userAgentNameTextField;
+    private TextField userAgentNameTextField,
+            dataDumpTextField;
     @FXML
-    private TextField dataDumpTextField;
+    private Slider numberOfCrawlersSlider,
+            maxDepthOfCrawlingSlider,
+            politenessDelaySlider,
+            includeHTTPSPagesSlider,
+            includeBinaryContentCrawlingSlider,
+            resumableCrawlingSlider;
+    
     @FXML
-    private Slider numberOfCrawlersSlider;
+    private TextField companyNameTextField,
+            tickerSymbolTextField,
+            stockExchangeTextField;
+    
     @FXML
-    private Slider maxDepthOfCrawlingSlider;
-    @FXML
-    private Slider politenessDelaySlider;
-    @FXML
-    private Slider includeHTTPSPagesSlider;
-    @FXML
-    private Slider includeBinaryContentCrawlingSlider;
-    @FXML
-    private Slider resumableCrawlingSlider;
+    private ListView soiRegistryListView;
+    
+    private ObservableList<Stock> soiObservableList;
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -85,6 +88,29 @@ public class MainWindow extends Application {
         includeHTTPSPagesSlider.setLabelFormatter(binaryLabelFormat);
         includeBinaryContentCrawlingSlider.setLabelFormatter(binaryLabelFormat);
         resumableCrawlingSlider.setLabelFormatter(binaryLabelFormat);
+        
+        // Retrieve the dictionary of stocks from SOIRegistry.
+        SOIRegistry soiRegistry = SOIRegistry.getInstance();
+        // Adapt the hash set to an array list.
+        ArrayList<Stock> list = new ArrayList<>(soiRegistry.getStockSet());
+        soiObservableList = FXCollections.observableList(list);
+        // Customise list view cells.
+        soiRegistryListView.setCellFactory(param -> new ListCell<Stock>() {
+            @Override
+            protected void updateItem(Stock item, boolean empty) {
+                super.updateItem(item, empty);
+                
+                if (empty) {
+                    setText(null);
+                } else {
+                    setText(item.getCompany() + " <<<" + item.getSymbol() +
+                            ">>> [" + item.getStockExchange() + "]");
+                }
+            }
+        });
+        // Sort stocks alphabetically.
+        soiObservableList.sort((o1, o2) -> o1.getCompany().compareToIgnoreCase(o2.getCompany()));
+        soiRegistryListView.setItems(soiObservableList);
     }
     
     public void startCrawlers() {
