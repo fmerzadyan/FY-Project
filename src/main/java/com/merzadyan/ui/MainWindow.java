@@ -1,6 +1,7 @@
 package com.merzadyan.ui;
 
 import com.merzadyan.*;
+import com.merzadyan.crawler.CrawlerManager;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -122,7 +123,7 @@ public class MainWindow extends Application {
             // buffer size of GUI console: keep one non-static instance of the GUI console and retrieve my logs i.e.
             // relevant tracing info and analysis results?
             if (crawlerManager != null) {
-                // crawlerManager.startNonBlockingCrawl();
+                 crawlerManager.startNonBlockingCrawl();
             }
         } catch (Exception ex) {
             LOGGER.debug(ex);
@@ -166,13 +167,22 @@ public class MainWindow extends Application {
      * Resets the UI controls in the configs tab.
      */
     public void resetConfigs() {
-        userAgentNameTextField.setText(crawlerManager.getUserAgentString());
-        dataDumpTextField.setText(crawlerManager.getCrawlStorageFolder());
-        numberOfCrawlersSlider.setValue(4d);
-        maxDepthOfCrawlingSlider.setValue(50d);
-        politenessDelaySlider.setValue(200d);
-        includeHTTPSPagesSlider.setValue(1d);
-        includeBinaryContentCrawlingSlider.setValue(0d);
-        resumableCrawlingSlider.setValue(1d);
+        userAgentNameTextField.setText(CrawlerManager.DEFAULT.DEFAULT_USER_AGENT_STRING);
+        dataDumpTextField.setText(CrawlerManager.DEFAULT.DEFAULT_CRAWL_STORAGE_FOLDER);
+        numberOfCrawlersSlider.setValue(CrawlerManager.DEFAULT.DEFAULT_NUMBER_OF_CRAWLERS);
+        maxDepthOfCrawlingSlider.setValue(CrawlerManager.DEFAULT.DEFAULT_MAX_DEPTH_OF_CRAWLING);
+        politenessDelaySlider.setValue(CrawlerManager.DEFAULT.DEFAULT_POLITENESS_DELAY);
+        includeHTTPSPagesSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_INCLUDE_HTTPS_PAGES));
+        includeBinaryContentCrawlingSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING));
+        resumableCrawlingSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_RESUMABLE_CRAWLING));
+    }
+    
+    /**
+     * Converts boolean value to corresponding double value.
+     * @param bool
+     * @return
+     */
+    private double adapt(boolean bool) {
+        return bool ? 1d : 0d;
     }
 }

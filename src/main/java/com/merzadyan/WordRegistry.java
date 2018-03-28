@@ -13,7 +13,6 @@ import java.util.HashSet;
 public class WordRegistry {
     private static final Logger LOGGER = Logger.getLogger(WordRegistry.class.getName());
     
-    // TODO: addIfNotZero more positive/negative words in to the word registry in their respective sets.
     private static final WordRegistry instance = new WordRegistry();
     
     private HashSet<String> positiveSet;

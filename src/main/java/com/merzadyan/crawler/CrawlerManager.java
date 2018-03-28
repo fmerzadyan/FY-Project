@@ -1,4 +1,4 @@
-package com.merzadyan;
+package com.merzadyan.crawler;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
@@ -7,7 +7,22 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 import org.apache.log4j.Logger;
 
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.*;
+
 public class CrawlerManager {
+    public static class DEFAULT {
+        public static final String DEFAULT_USER_AGENT_STRING = "crawler4j (https://github.com/yasserg/crawler4j/)";
+        public static final String DEFAULT_CRAWL_STORAGE_FOLDER = "/Users/fmerzadyan/data/crawler4j/";
+        
+        public static final int DEFAULT_NUMBER_OF_CRAWLERS = 2;
+        public static final int DEFAULT_MAX_DEPTH_OF_CRAWLING = 50;
+        public static final int DEFAULT_POLITENESS_DELAY = 1000;
+        
+        public static final boolean DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING = false;
+        public static final boolean DEFAULT_INCLUDE_HTTPS_PAGES = true;
+        public static final boolean DEFAULT_RESUMABLE_CRAWLING = true;
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(CrawlerManager.class.getName());
     
     private CrawlConfig crawlConfig;
@@ -31,18 +46,17 @@ public class CrawlerManager {
         
         crawlerFactory = new CrawlerFactory();
         
-        userAgentString = "crawler4j (https://github.com/yasserg/crawler4j/)";
+        userAgentString = DEFAULT_USER_AGENT_STRING;
         // Data dump is located in C:\Users\fmerzadyan\data\crawler4j.
-        crawlStorageFolder = "/Users/fmerzadyan/data/crawler4j/";
+        crawlStorageFolder = DEFAULT_CRAWL_STORAGE_FOLDER;
         
-        // TODO: optimal number of crawlers?
-        numberOfCrawlers = 7;
-        maxDepthOfCrawling = 500;
-        politenessDelay = 200;
+        numberOfCrawlers = DEFAULT_NUMBER_OF_CRAWLERS;
+        maxDepthOfCrawling = DEFAULT_MAX_DEPTH_OF_CRAWLING;
+        politenessDelay = DEFAULT_POLITENESS_DELAY;
         
-        includeBinaryContentInCrawling = false;
-        includeHttpsPages = true;
-        resumableCrawling = true;
+        includeBinaryContentInCrawling = DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING;
+        includeHttpsPages = DEFAULT_INCLUDE_HTTPS_PAGES;
+        resumableCrawling = DEFAULT_RESUMABLE_CRAWLING;
     }
     
     public void startNonBlockingCrawl() throws Exception {
@@ -82,6 +96,9 @@ public class CrawlerManager {
         // TODO: find suitable seed URLs.
         // TODO: seed URL management - e.g. separate class?
         controller.addSeed("https://uk.finance.yahoo.com/");
+        controller.addSeed("http://www.bbc.co.uk/news/business/markets/europe/lse_ukx");
+        controller.addSeed("https://uk.investing.com/indices/uk-100-news");
+        controller.addSeed("https://www.economist.com/topics/ftse-100-index");
         
         // A crawler factory is required to feed data into the crawler.
         // Runs the crawlers in a non-blocking thread.
@@ -184,5 +201,14 @@ public class CrawlerManager {
     
     public void setResumableCrawling(boolean resumableCrawling) {
         this.resumableCrawling = resumableCrawling;
+    }
+    
+    public static void main(String[] args) {
+        CrawlerManager crawlerManager = new CrawlerManager();
+        try {
+            crawlerManager.startNonBlockingCrawl();
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
     }
 }
