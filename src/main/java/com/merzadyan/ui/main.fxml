@@ -5,8 +5,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <TabPane fx:id="mainWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-         prefHeight="448.0" prefWidth="694.0" styleClass="secondary" stylesheets="@main.css"
-         tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+         prefHeight="448.0" prefWidth="694.0" stylesheets="@main.css" tabClosingPolicy="UNAVAILABLE"
+         xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1"
          fx:controller="com.merzadyan.ui.MainWindow">
     <tabs>
         <Tab fx:id="MainTab" text="Main">
@@ -16,8 +16,7 @@
             <content>
                 <SplitPane dividerPositions="0.31682027649769584" prefHeight="160.0" prefWidth="200.0">
                     <items>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0"
-                                    styleClass="secondary">
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                             <children>
                                 <VBox>
                                     <children>

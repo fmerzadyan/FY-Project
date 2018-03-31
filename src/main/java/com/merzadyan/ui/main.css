@@ -1,72 +1,87 @@
-/* Primary colour. */
-.primary {
-    -fx-background-color: black !important;
-}
-
-/* Secondary colour. */
-.secondary {
-    -fx-background-color: gold !important;
+.root {
+    -default: #5d5c61;
+    -default-modena: #F4F4F4;
+    -cream: #D9B08C;
+    -rose-gold: #FFCB9A;
+    -light-blue: #D1E8E2;
+    -blue: #116466;
+    -dark-blue: #2C3531;
 }
 
 .text-area {
-    -fx-background-color: transparent;
-    -fx-text-fill: white;
+    -fx-background-insets: 0;
+    -fx-background-color: transparent, white, transparent, white;
 }
 
 .text-area .content {
-    -fx-background-color: black;
+    -fx-background-color: transparent, white, transparent, white;
+}
+
+.text-area:focused .content {
+    -fx-background-color: transparent, white, transparent, white;
+}
+
+.text-area:focused {
+    -fx-highlight-fill: -dark-blue;
+}
+
+.text-area .content {
+    -fx-padding: 10px;
+    -fx-text-fill: -dark-blue;
+    -fx-highlight-fill: -light-blue;
 }
 
 .button {
-    -fx-background-color: black;
+    -fx-background-color: -dark-blue;
     -fx-font-weight: bold;
-    -fx-text-fill: gold;
+    -fx-text-fill: -rose-gold;
 }
 
 .tab-pane *.tab-header-area *.tab-header-background {
-    -fx-background-color:transparent;
+    -fx-background-color: -dark-blue;
 }
 
 .tab-pane {
-    -fx-tab-min-width:140px;
-    -fx-tab-max-width:140px;
-    -fx-tab-min-height:50px;
-    -fx-tab-max-height:50px;
+    -fx-tab-min-width: 140px;
+    -fx-tab-max-width: 140px;
+    -fx-tab-min-height: 50px;
+    -fx-tab-max-height: 50px;
+}
+
+.tab-label {
+    -fx-text-fill: -light-blue;
+    -fx-font-weight: bold;
 }
 
 .tab {
     -fx-font-size: 16;
-    -fx-background-color:#ffac00 ;
+    -fx-background-color: -dark-blue;
 }
 
 .tab:selected {
-    -fx-background-color: #ff9700;
+    -fx-background-color: -blue;
 }
 
 .tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
-    -fx-border-color: transparent;
+    -fx-border-color: -default;
 }
 
 .split-pane {
-    -fx-background-color: gold;
+    -fx-background-color: transparent;
 }
 
 .split-pane:horizontal > .split-pane-divider {
-    -fx-background-color: gold;
+    -fx-background-color: -dark-blue;
 }
 
 .split-pane:vertical > .split-pane-divider {
-    -fx-background-color: gold;
-}
-
-.progress-indicator {
-    -fx-progress-color: red;
+    -fx-background-color: -dark-blue;
 }
 
 .slider .thumb {
-    -fx-background-color: black;
+    -fx-background-color: -rose-gold;
 }
 
 .slider .track {
-    -fx-background-color: #ff9700;
+    -fx-background-color: -cream;
 }
