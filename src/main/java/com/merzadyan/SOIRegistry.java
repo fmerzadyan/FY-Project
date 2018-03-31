@@ -17,11 +17,11 @@ public class SOIRegistry {
     
     private HashSet<Stock> stockSet;
     
-    private static String soiFilePath;
+    private static final String DEFAULT_SOI_FILE_PATH = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\default-soi.txt";
     
     private SOIRegistry() {
         stockSet = new HashSet<>();
-        soiFilePath = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\soi.txt";
+        String soiFilePath = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\soi.txt";
         stockSet = extractStocks(soiFilePath);
     }
     
@@ -30,20 +30,25 @@ public class SOIRegistry {
     }
     
     private HashSet<Stock> extractStocks(String soiFilePath) {
-        if (!CommonOp.isNotNullAndNotEmpty(soiFilePath)) {
+        if (Common.isNullOrEmptyString(soiFilePath)) {
             LOGGER.debug("Error: file is not set.");
             return null;
         }
         
-        if (!CommonOp.fileExists(soiFilePath)) {
+        if (!Common.isFile(soiFilePath)) {
             LOGGER.debug("Error: " + soiFilePath + " does not exist.");
             return null;
+        }
+        
+        String filePath = soiFilePath;
+        if (Common.isEmptyFile(filePath)) {
+            filePath = DEFAULT_SOI_FILE_PATH;
         }
         
         HashSet<Stock> set = new HashSet<>();
         
         try {
-            FileReader fileReader = new FileReader(soiFilePath);
+            FileReader fileReader = new FileReader(filePath);
             
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             

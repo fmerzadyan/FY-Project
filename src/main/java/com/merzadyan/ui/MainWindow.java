@@ -141,10 +141,10 @@ public class MainWindow extends Application {
         // Guard against null strings.
         String userAgentName = userAgentNameTextField.getText().trim();
         String dataDump = userAgentNameTextField.getText().trim();
-        if (CommonOp.isNotNullAndNotEmpty(userAgentName)) {
+        if (!Common.isNullOrEmptyString(userAgentName)) {
             crawlerManager.setUserAgentString(userAgentNameTextField.getText().trim());
         }
-        if (CommonOp.isNotNullAndNotEmpty(dataDump)) {
+        if (!Common.isNullOrEmptyString(dataDump)) {
             crawlerManager.setCrawlStorageFolder(dataDumpTextField.getText().trim());
         }
         

@@ -37,12 +37,12 @@ public class WordRegistry {
     }
     
     private void populatePositiveSet() {
-        if (!CommonOp.isNotNullAndNotEmpty(positiveSetFilePath)) {
+        if (Common.isNullOrEmptyString(positiveSetFilePath)) {
             LOGGER.debug("Error: positive-set file is not set.");
             return;
         }
         
-        if (!CommonOp.fileExists(positiveSetFilePath)) {
+        if (!Common.isFile(positiveSetFilePath)) {
             LOGGER.debug("Error: positive-set file does not exist.");
             return;
         }
@@ -51,12 +51,12 @@ public class WordRegistry {
     }
     
     private void populateNegativeSet() {
-        if (!CommonOp.isNotNullAndNotEmpty(negativeSetFilePath)) {
+        if (Common.isNullOrEmptyString(negativeSetFilePath)) {
             LOGGER.debug("Error: negative-set file is not set.");
             return;
         }
         
-        if (!CommonOp.fileExists(negativeSetFilePath)) {
+        if (!Common.isFile(negativeSetFilePath)) {
             LOGGER.debug("Error: negative-set file does not exist.");
             return;
         }
@@ -67,24 +67,29 @@ public class WordRegistry {
     /**
      * Extracts lexicon from the given file.
      *
-     * @param setFilePath
+     * @param filePath
      * @return set of words.
      */
-    private HashSet<String> extractWords(String setFilePath) {
-        if (!CommonOp.isNotNullAndNotEmpty(setFilePath)) {
+    private HashSet<String> extractWords(String filePath) {
+        if (Common.isNullOrEmptyString(filePath)) {
             LOGGER.debug("Error: file is not set.");
             return null;
         }
         
-        if (!CommonOp.fileExists(setFilePath)) {
-            LOGGER.debug("Error: " + setFilePath + " does not exist.");
+        if (!Common.isFile(filePath)) {
+            LOGGER.debug("Error: " + filePath + " does not exist.");
+            return null;
+        }
+        
+        if (Common.isEmptyFile(filePath)) {
+            LOGGER.debug("Error: " + filePath + " is empty.");
             return null;
         }
         
         HashSet<String> set = new HashSet<>();
         
         try {
-            FileReader fileReader = new FileReader(setFilePath);
+            FileReader fileReader = new FileReader(filePath);
             
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             
