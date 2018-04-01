@@ -6,6 +6,10 @@ public class Stock implements Comparator {
     private String company;
     private String symbol;
     private String stockExchange;
+    /**
+     * Default sentiment score is -1 indicating that it has not been updated with a sentiment score yet.
+     */
+    private int latestSentimentScore;
     
     public Stock() {
     
@@ -15,6 +19,7 @@ public class Stock implements Comparator {
         this.company = company;
         this.symbol = symbol;
         this.stockExchange = stockExchange;
+        latestSentimentScore = -1;
     }
     
     @Override
@@ -67,5 +72,13 @@ public class Stock implements Comparator {
             return;
         }
         this.stockExchange = null;
+    }
+    
+    public void setLatestSentimentScore(int sentimentScore) {
+        this.latestSentimentScore = sentimentScore;
+    }
+    
+    public int getLatestSentimentScore() {
+        return latestSentimentScore;
     }
 }

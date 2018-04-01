@@ -41,10 +41,10 @@ public class CrawlerManager {
     private boolean includeBinaryContentInCrawling;
     private boolean resumableCrawling;
     
-    public CrawlerManager() {
+    public CrawlerManager(CrawlerTerminationListener terminationListener) {
         crawlConfig = new CrawlConfig();
         
-        crawlerFactory = new CrawlerFactory();
+        crawlerFactory = new CrawlerFactory(terminationListener);
         
         userAgentString = DEFAULT_USER_AGENT_STRING;
         // Data dump is located in C:\Users\fmerzadyan\data\crawler4j.
@@ -204,7 +204,7 @@ public class CrawlerManager {
     }
     
     public static void main(String[] args) {
-        CrawlerManager crawlerManager = new CrawlerManager();
+        CrawlerManager crawlerManager = new CrawlerManager(null);
         try {
             crawlerManager.startNonBlockingCrawl();
         } catch (Exception e) {

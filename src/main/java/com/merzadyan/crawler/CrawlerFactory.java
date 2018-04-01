@@ -9,13 +9,14 @@ import org.apache.log4j.Logger;
  */
 public class CrawlerFactory implements CrawlController.WebCrawlerFactory {
     private static final Logger LOGGER = Logger.getLogger(CrawlerFactory.class.getName());
+    private CrawlerTerminationListener terminationListener;
     
-    public CrawlerFactory() {
-    
+    public CrawlerFactory(CrawlerTerminationListener terminationListener) {
+        this.terminationListener = terminationListener;
     }
     
     @Override
     public WebCrawler newInstance() throws Exception {
-        return new Crawler();
+        return new Crawler(terminationListener);
     }
 }

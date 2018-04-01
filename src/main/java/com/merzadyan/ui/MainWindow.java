@@ -1,7 +1,11 @@
 package com.merzadyan.ui;
 
-import com.merzadyan.*;
+import com.merzadyan.Common;
+import com.merzadyan.SOIRegistry;
+import com.merzadyan.Stock;
+import com.merzadyan.TextAreaAppender;
 import com.merzadyan.crawler.CrawlerManager;
+import com.merzadyan.crawler.CrawlerTerminationListener;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,11 +18,13 @@ import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainWindow extends Application {
     private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
     
     private CrawlerManager crawlerManager;
+    private ResultsCallback resultsCallback;
     
     @FXML
     private TextArea consoleTextArea;
@@ -44,6 +50,32 @@ public class MainWindow extends Application {
     
     private ObservableList<Stock> soiObservableList;
     
+    private class ResultsCallback implements CrawlerTerminationListener {
+        @Override
+        public void onTermination(HashMap<Stock, ArrayList<Integer>> soiScoreMap) {
+            LOGGER.debug("MainWindow #onTermination");
+            if (soiScoreMap == null) {
+                return;
+            }
+            
+            try {
+                soiScoreMap.forEach((stock, scores) -> {
+                    consoleTextArea.appendText("\n");
+                    StringBuilder out = new StringBuilder();
+                    out.append("Stock: " + stock.getCompany())
+                            .append(" Symbol: " + stock.getSymbol())
+                            .append(" Symbol: " + stock.getSymbol())
+                            .append(" Stock Exchange: " + stock.getStockExchange())
+                            .append(" Sentiment Score: " + stock.getLatestSentimentScore());
+                    consoleTextArea.appendText(out.toString());
+                    consoleTextArea.appendText("\n");
+                });
+            } catch (NullPointerException e) {
+                LOGGER.error(e);
+            }
+        }
+    }
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         setUserAgentStylesheet(STYLESHEET_MODENA);
@@ -63,7 +95,9 @@ public class MainWindow extends Application {
         TextAreaAppender.setTextArea(consoleTextArea);
         consoleTextArea.appendText("Started application.\n");
         
-        crawlerManager = new CrawlerManager();
+        resultsCallback = new ResultsCallback();
+        crawlerManager = new CrawlerManager(resultsCallback);
+        
         userAgentNameTextField.setText(crawlerManager.getUserAgentString());
         dataDumpTextField.setText(crawlerManager.getCrawlStorageFolder());
         
@@ -123,7 +157,7 @@ public class MainWindow extends Application {
             // buffer size of GUI console: keep one non-static instance of the GUI console and retrieve my logs i.e.
             // relevant tracing info and analysis results?
             if (crawlerManager != null) {
-                 crawlerManager.startNonBlockingCrawl();
+                crawlerManager.startNonBlockingCrawl();
             }
         } catch (Exception ex) {
             LOGGER.debug(ex);
@@ -179,6 +213,7 @@ public class MainWindow extends Application {
     
     /**
      * Converts boolean value to corresponding double value.
+     *
      * @param bool
      * @return
      */

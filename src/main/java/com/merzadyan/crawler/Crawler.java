@@ -30,12 +30,15 @@ public class Crawler extends WebCrawler {
     
     private HashMap<Stock, ArrayList<Integer>> soiScoreMap;
     
+    private CrawlerTerminationListener terminationListener;
+    
     /**
      * List of file extensions to filter out urls which are non-text, non-readable resources.
      */
     private static final Pattern FILTERS = constructPattern();
     
-    Crawler() {
+    Crawler(CrawlerTerminationListener terminationListener) {
+        this.terminationListener = terminationListener;
         linksVisited = 0;
         soiScoreMap = new HashMap<>();
         constructTrie();
@@ -182,7 +185,56 @@ public class Crawler extends WebCrawler {
      */
     @Override
     public void onBeforeExit() {
+        soiScoreMap.forEach((stock, scores) -> {
+            // The array facilitates tallying of scores.
+            int[] tallyScores = new int[5];
+            // Determine the most frequent sentiment score for this stock.
+            for (int score : scores) {
+                switch (score) {
+                    case 0:
+                        tallyScores[0] += 1;
+                        break;
+                    case 1:
+                        tallyScores[1] += 1;
+                        break;
+                    case 2:
+                        tallyScores[2] += 1;
+                        break;
+                    case 3:
+                        tallyScores[3] += 1;
+                        break;
+                    case 4:
+                        tallyScores[4] += 1;
+                        break;
+                    default:
+                        LOGGER.error("score: " + score);
+                        break;
+                }
+            }
+            int mode = -1;
+            // Determine largest value in array thus most frequent sentiment score.
+            for (int score : tallyScores) {
+                if (score > mode) {
+                    mode = score;
+                }
+            }
+            // Mark stock with the latest sentiment score.
+            stock.setLatestSentimentScore(mode);
+        });
         
+        publish(soiScoreMap);
+    }
+    
+    /**
+     * Publishes the results of web crawl to listeners. The map holds stocks with a sentiment score
+     * property indicating future performance based on current affairs.
+     *
+     * @param map
+     */
+    public void publish(HashMap<Stock, ArrayList<Integer>> map) {
+        if (terminationListener != null) {
+            terminationListener.onTermination(map);
+        }
     }
     
     @Override
