@@ -7,6 +7,8 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 import org.apache.log4j.Logger;
 
+import java.util.HashSet;
+
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.*;
 
 public class CrawlerManager {
@@ -23,12 +25,22 @@ public class CrawlerManager {
         public static final boolean DEFAULT_RESUMABLE_CRAWLING = true;
     }
     
+    public static class MODE {
+        public static final String TEST_MODE_ONE = "TEST_MODE_ONE";
+        public static final String TEST_MODE_TWO = "TEST_MODE_TWO";
+        public static final String TEST_MODE_THREE = "TEST_MODE_THREE";
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(CrawlerManager.class.getName());
     
     private CrawlConfig crawlConfig;
     
     private CrawlController controller;
     private CrawlerFactory crawlerFactory;
+    
+    private HashSet<String> seedUrlSet;
+    private boolean test;
+    private String testMode;
     
     private String userAgentString;
     private String crawlStorageFolder;
@@ -46,6 +58,7 @@ public class CrawlerManager {
         
         crawlerFactory = new CrawlerFactory(terminationListener);
         
+        seedUrlSet = new HashSet<>();
         userAgentString = DEFAULT_USER_AGENT_STRING;
         // Data dump is located in C:\Users\fmerzadyan\data\crawler4j.
         crawlStorageFolder = DEFAULT_CRAWL_STORAGE_FOLDER;
@@ -88,17 +101,35 @@ public class CrawlerManager {
         RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
         controller = new CrawlController(crawlConfig, pageFetcher, robotstxtServer);
         
-        /*
-         * For each crawl, you need to addIfNotZero some seed urls. These are the first
-         * URLs that are fetched and then the crawler starts following links
-         * which are found in these pages
-         */
-        // TODO: find suitable seed URLs.
-        // TODO: seed URL management - e.g. separate class?
-        controller.addSeed("https://uk.finance.yahoo.com/");
-        controller.addSeed("http://www.bbc.co.uk/news/business/markets/europe/lse_ukx");
-        controller.addSeed("https://uk.investing.com/indices/uk-100-news");
-        controller.addSeed("https://www.economist.com/topics/ftse-100-index");
+        if (test && testMode != null && !testMode.isEmpty()) {
+            switch (testMode) {
+                case MODE.TEST_MODE_ONE:
+                    controller.addSeed("merzadyan.com");
+                    break;
+                case MODE.TEST_MODE_TWO:
+                    break;
+                case MODE.TEST_MODE_THREE:
+                    break;
+                default:
+                    /*
+                     * For each crawl, you need to add some seed urls. These are the first
+                     * URLs that are fetched and then the crawler starts following links
+                     * which are found in these pages
+                     */
+                    // TODO: find suitable seed URLs.
+                    // TODO: seed URL management - e.g. separate class?
+                    controller.addSeed("https://uk.finance.yahoo.com/");
+                    controller.addSeed("http://www.bbc.co.uk/news/business/markets/europe/lse_ukx");
+                    controller.addSeed("https://uk.investing.com/indices/uk-100-news");
+                    controller.addSeed("https://www.economist.com/topics/ftse-100-index");
+                    break;
+            }
+        } else {
+            controller.addSeed("https://uk.finance.yahoo.com/");
+            controller.addSeed("http://www.bbc.co.uk/news/business/markets/europe/lse_ukx");
+            controller.addSeed("https://uk.investing.com/indices/uk-100-news");
+            controller.addSeed("https://www.economist.com/topics/ftse-100-index");
+        }
         
         // A crawler factory is required to feed data into the crawler.
         // Runs the crawlers in a non-blocking thread.
@@ -113,6 +144,15 @@ public class CrawlerManager {
         // Shuts down the crawlers.
         controller.shutdown();
         controller.waitUntilFinish();
+    }
+    
+    public void addSeedUrl(String seedUrl) {
+        seedUrlSet.add(seedUrl);
+    }
+    
+    public boolean removeSeedUrl(String seedUrl) {
+        return seedUrlSet != null && seedUrlSet.contains(seedUrl) && seedUrlSet.remove(seedUrl);
+        
     }
     
     public CrawlConfig getCrawlConfig() {
@@ -137,6 +177,30 @@ public class CrawlerManager {
     
     public void setCrawlerFactory(CrawlerFactory crawlerFactory) {
         this.crawlerFactory = crawlerFactory;
+    }
+    
+    public void setSeedUrlSet(HashSet<String> seedUrlSet) {
+        this.seedUrlSet = seedUrlSet;
+    }
+    
+    public HashSet<String> getSeedUrlSet() {
+        return seedUrlSet;
+    }
+    
+    public boolean isTest() {
+        return test;
+    }
+    
+    public void setTest(boolean test) {
+        this.test = test;
+    }
+    
+    public String getTestMode() {
+        return testMode;
+    }
+    
+    public void setTestMode(String testMode) {
+        this.testMode = testMode;
     }
     
     public String getUserAgentString() {

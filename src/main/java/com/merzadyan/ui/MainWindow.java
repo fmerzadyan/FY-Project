@@ -7,6 +7,8 @@ import com.merzadyan.TextAreaAppender;
 import com.merzadyan.crawler.CrawlerManager;
 import com.merzadyan.crawler.CrawlerTerminationListener;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -26,9 +28,15 @@ public class MainWindow extends Application {
     private CrawlerManager crawlerManager;
     private ResultsCallback resultsCallback;
     
+    /*
+     * Main tab.
+     */
     @FXML
     private TextArea consoleTextArea;
     
+    /*
+     * Config tab.
+     */
     @FXML
     private TextField userAgentNameTextField,
             dataDumpTextField;
@@ -40,6 +48,9 @@ public class MainWindow extends Application {
             includeBinaryContentCrawlingSlider,
             resumableCrawlingSlider;
     
+    /*
+     * SOI Registry tab.
+     */
     @FXML
     private TextField companyNameTextField,
             tickerSymbolTextField,
@@ -47,8 +58,26 @@ public class MainWindow extends Application {
     
     @FXML
     private ListView soiRegistryListView;
-    
     private ObservableList<Stock> soiObservableList;
+    
+    /*
+     * Seed URLs tab.
+     */
+    @FXML
+    private ComboBox testModeComboBox;
+    
+    @FXML
+    private Slider testSlider;
+    
+    @FXML
+    private TextField seedUrlTextField;
+    
+    @FXML
+    private Button addSeedUrlBtn,
+            removeSeedUrlBtn;
+    
+    @FXML
+    private ListView seedUrlsListView;
     
     private class ResultsCallback implements CrawlerTerminationListener {
         @Override
@@ -92,12 +121,18 @@ public class MainWindow extends Application {
      */
     @FXML
     public void initialize() {
+        /*
+         * Main tab.
+         */
         TextAreaAppender.setTextArea(consoleTextArea);
         consoleTextArea.appendText("Started application.\n");
         
         resultsCallback = new ResultsCallback();
         crawlerManager = new CrawlerManager(resultsCallback);
         
+        /*
+         * Config tab.
+         */
         userAgentNameTextField.setText(crawlerManager.getUserAgentString());
         dataDumpTextField.setText(crawlerManager.getCrawlStorageFolder());
         
@@ -124,6 +159,9 @@ public class MainWindow extends Application {
         includeBinaryContentCrawlingSlider.setLabelFormatter(binaryLabelFormat);
         resumableCrawlingSlider.setLabelFormatter(binaryLabelFormat);
         
+        /*
+         * SOI Registry tab.
+         */
         // Retrieve the dictionary of stocks from SOIRegistry.
         SOIRegistry soiRegistry = SOIRegistry.getInstance();
         // Adapt the hash set to an array list.
@@ -146,6 +184,26 @@ public class MainWindow extends Application {
         // Sort stocks alphabetically.
         soiObservableList.sort((o1, o2) -> o1.getCompany().compareToIgnoreCase(o2.getCompany()));
         soiRegistryListView.setItems(soiObservableList);
+        
+        /*
+         * Seed URLs tab.
+         */
+        testModeComboBox.getItems().clear();
+        // TODO: reconsider item text and corresponding test operation; also use constant strings.
+        testModeComboBox.getItems().addAll(
+                CrawlerManager.MODE.TEST_MODE_ONE,
+                CrawlerManager.MODE.TEST_MODE_TWO,
+                CrawlerManager.MODE.TEST_MODE_THREE
+        );
+        
+        testSlider.setLabelFormatter(binaryLabelFormat);
+        toggleMode();
+        testSlider.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                toggleMode();
+            }
+        });
     }
     
     public void startCrawlers() {
@@ -156,9 +214,22 @@ public class MainWindow extends Application {
             // TODO: different approach - instead of reducing output (muting crawler4j/Stanford logs) OR increasing
             // buffer size of GUI console: keep one non-static instance of the GUI console and retrieve my logs i.e.
             // relevant tracing info and analysis results?
-            if (crawlerManager != null) {
-                crawlerManager.startNonBlockingCrawl();
+            if (crawlerManager == null) {
+                LOGGER.fatal("CrawlerManager: null");
+                return;
             }
+            
+            if (testSlider.getValue() == 1d) {
+                String operation = (String) testModeComboBox.getValue();
+                LOGGER.debug("Test Mode: " + operation);
+                crawlerManager.setTest(true);
+                crawlerManager.setTestMode((String) testModeComboBox.getValue());
+            } else {
+                crawlerManager.setTest(false);
+                crawlerManager.setTestMode(null);
+            }
+            
+            crawlerManager.startNonBlockingCrawl();
         } catch (Exception ex) {
             LOGGER.debug(ex);
         }
@@ -209,6 +280,24 @@ public class MainWindow extends Application {
         includeHTTPSPagesSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_INCLUDE_HTTPS_PAGES));
         includeBinaryContentCrawlingSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING));
         resumableCrawlingSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_RESUMABLE_CRAWLING));
+    }
+    
+    /**
+     * Controls and toggles the states (enable/disable) of UI controls based on the current value
+     * of the testSlider in Seed URLs tab.
+     */
+    private void toggleMode() {
+        if (testSlider.getValue() == 1d) {
+            testModeComboBox.setDisable(false);
+            seedUrlTextField.setDisable(true);
+            addSeedUrlBtn.setDisable(true);
+            removeSeedUrlBtn.setDisable(true);
+        } else {
+            testModeComboBox.setDisable(true);
+            seedUrlTextField.setDisable(false);
+            addSeedUrlBtn.setDisable(false);
+            removeSeedUrlBtn.setDisable(false);
+        }
     }
     
     /**
