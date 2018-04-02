@@ -84,23 +84,28 @@ public class MainWindow extends Application {
         public void onTermination(HashMap<Stock, ArrayList<Integer>> soiScoreMap) {
             LOGGER.debug("MainWindow #onTermination");
             if (soiScoreMap == null) {
+                LOGGER.debug("soiScore == null");
                 return;
             }
-            
+    
+            LOGGER.debug("soiScore != null");
             try {
+                // FIXME: soiScoreMap size is 0. Should not be size 0.
+                LOGGER.debug("soiScoreMap size: " + soiScoreMap.size());
                 soiScoreMap.forEach((stock, scores) -> {
-                    consoleTextArea.appendText("\n");
-                    StringBuilder out = new StringBuilder();
-                    out.append("Stock: " + stock.getCompany())
-                            .append(" Symbol: " + stock.getSymbol())
-                            .append(" Symbol: " + stock.getSymbol())
-                            .append(" Stock Exchange: " + stock.getStockExchange())
-                            .append(" Sentiment Score: " + stock.getLatestSentimentScore());
-                    consoleTextArea.appendText(out.toString());
-                    consoleTextArea.appendText("\n");
+                    // consoleTextArea.appendText("\n");
+                    String out = ("Stock: " + stock.getCompany()) +
+                            " Symbol: " + stock.getSymbol() +
+                            " Symbol: " + stock.getSymbol() +
+                            " Stock Exchange: " + stock.getStockExchange() +
+                            " Sentiment Score: " + stock.getLatestSentimentScore();
+                    // consoleTextArea.appendText(out.toString());
+                    // consoleTextArea.appendText("\n");
+                    LOGGER.debug("result: " + out);
                 });
-            } catch (NullPointerException e) {
-                LOGGER.error(e);
+            } catch (Exception e) {
+                LOGGER.debug("Something went wrong.");
+                LOGGER.fatal(e);
             }
         }
     }

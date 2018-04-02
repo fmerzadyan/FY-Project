@@ -102,9 +102,12 @@ public class CrawlerManager {
         controller = new CrawlController(crawlConfig, pageFetcher, robotstxtServer);
         
         if (test && testMode != null && !testMode.isEmpty()) {
+            LOGGER.debug("testMode: " + testMode);
             switch (testMode) {
                 case MODE.TEST_MODE_ONE:
-                    controller.addSeed("merzadyan.com");
+                    LOGGER.debug("Adding merzadyan.com seed url.");
+                    // IMPORTANT NOTE: http:// is required for the url to be valid.
+                    controller.addSeed("http://merzadyan.com");
                     break;
                 case MODE.TEST_MODE_TWO:
                     break;
@@ -116,6 +119,7 @@ public class CrawlerManager {
                      * URLs that are fetched and then the crawler starts following links
                      * which are found in these pages
                      */
+                    LOGGER.debug("Adding other seed URLs.");
                     // TODO: find suitable seed URLs.
                     // TODO: seed URL management - e.g. separate class?
                     controller.addSeed("https://uk.finance.yahoo.com/");
@@ -125,6 +129,8 @@ public class CrawlerManager {
                     break;
             }
         } else {
+            LOGGER.debug("Adding other seed URLS in ELSE block.");
+            LOGGER.debug("(test && testMode != null && !testMode.isEmpty() == false");
             controller.addSeed("https://uk.finance.yahoo.com/");
             controller.addSeed("http://www.bbc.co.uk/news/business/markets/europe/lse_ukx");
             controller.addSeed("https://uk.investing.com/indices/uk-100-news");
@@ -224,7 +230,9 @@ public class CrawlerManager {
     }
     
     public void setNumberOfCrawlers(int numberOfCrawlers) {
-        this.numberOfCrawlers = numberOfCrawlers;
+        if (numberOfCrawlers > 0) {
+            this.numberOfCrawlers = numberOfCrawlers;
+        }
     }
     
     public int getMaxDepthOfCrawling() {
@@ -268,7 +276,33 @@ public class CrawlerManager {
     }
     
     public static void main(String[] args) {
-        CrawlerManager crawlerManager = new CrawlerManager(null);
+        CrawlerTerminationListener listener = soiScoreMap -> {
+            LOGGER.debug("MainWindow #onTermination");
+            if (soiScoreMap == null) {
+                LOGGER.debug("soiScore == null");
+                return;
+            }
+            
+            LOGGER.debug("soiScore != null");
+            try {
+                LOGGER.debug("soiScoreMap size: " + soiScoreMap.size());
+                soiScoreMap.forEach((stock, scores) -> {
+                    String out = ("Stock: " + stock.getCompany()) +
+                            " Symbol: " + stock.getSymbol() +
+                            " Symbol: " + stock.getSymbol() +
+                            " Stock Exchange: " + stock.getStockExchange() +
+                            " Sentiment Score: " + stock.getLatestSentimentScore();
+                    LOGGER.debug("result: " + out);
+                });
+            } catch (Exception e) {
+                LOGGER.fatal(e);
+            }
+        };
+        CrawlerManager crawlerManager = new CrawlerManager(listener);
+        crawlerManager.setNumberOfCrawlers(1);
+        crawlerManager.setTest(true);
+        crawlerManager.setTestMode(MODE.TEST_MODE_ONE);
+        
         try {
             crawlerManager.startNonBlockingCrawl();
         } catch (Exception e) {

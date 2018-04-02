@@ -115,23 +115,26 @@ public class Crawler extends WebCrawler {
         boolean matchesFilter = FILTERS.matcher(href).matches();
         
         // If the href contains one of the file extensions (to not crawl) then do not visit that page.
+        LOGGER.debug("matchesFilter: " + matchesFilter);
         if (matchesFilter) {
             return false;
         }
         
-        // Only perform Aho-Corasick on non-seed URLs.
-        if (linksVisited >= 1) {
-            // Use Aho-Corasick to further filter which pages to ones containing info about select-companies.
-            if (referringPage.getParseData() instanceof HtmlParseData) {
-                HtmlParseData htmlParseData = (HtmlParseData) referringPage.getParseData();
-                Document document = Jsoup.parseBodyFragment(htmlParseData.getHtml());
-                
-                // Using #firstMatch for optimisation purposes - as long as there is
-                // at least one mention of a SOI then it is unnecessary to process further.
-                return trie != null && trie.firstMatch(document.body().text()) != null;
-            }
+        // Use Aho-Corasick to further filter which pages to ones containing info about select-companies.
+        if (referringPage.getParseData() instanceof HtmlParseData) {
+            HtmlParseData htmlParseData = (HtmlParseData) referringPage.getParseData();
+            Document document = Jsoup.parseBodyFragment(htmlParseData.getHtml());
+            
+            LOGGER.debug("document.body().text(): " + document.body().text());
+            boolean firstMatch = trie != null && trie.firstMatch(document.body().text()) != null;
+            LOGGER.debug("firstMatch: " + firstMatch);
+            
+            // Using #firstMatch for optimisation purposes - as long as there is
+            // at least one mention of a SOI then it is unnecessary to process further.
+            return firstMatch;
         }
         
+        LOGGER.debug("Returning false...");
         // Defaults to false since either links visited < 1 or referring page is not instance of HtmlParseData.
         return false;
     }
@@ -153,12 +156,26 @@ public class Crawler extends WebCrawler {
             Element body = document.body();
             String contentText = body.text();
             Set<WebURL> links = htmlParseData.getOutgoingUrls();
+            LOGGER.debug("\n");
+            LOGGER.debug("\n");
+            LOGGER.debug("\n");
+            LOGGER.debug("\n");
+            LOGGER.debug("\n");
+            LOGGER.debug("\n");
+            LOGGER.debug("URL: " + url);
             LOGGER.debug("Number of outgoing links: " + links.size());
             LOGGER.debug("Text length: " + contentText.length());
             LOGGER.debug(contentText);
             
-            // #identifyEntity returns a non-null result if the title contains a SOI.
-            String company = SentientAnalyser.identifyEntity(document.title(), trie);
+            LOGGER.debug("title: " + document.title());
+            // #identifyOrganisationEntity returns a non-null result if the title contains a SOI.
+            String company = null;
+            try {
+                company = SentientAnalyser.identifyOrganisationEntity(document.title(), trie);
+            } catch (Exception e) {
+                LOGGER.debug(e);
+            }
+            LOGGER.debug("company: " + company);
             // Exit page if the result is null.
             if (company == null) {
                 return;
@@ -166,11 +183,17 @@ public class Crawler extends WebCrawler {
             
             Stock stock = new Stock();
             stock.setCompany(company);
-            
-            int score = SentientAnalyser.findSentiment(contentText);
-            LOGGER.debug("score: " + score);
+    
+            int score = -1;
+            try {
+                score = SentientAnalyser.findSentiment(contentText);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            LOGGER.debug("Score: " + score);
             // Disregard -1 returns.
             if (score != -1 && soiScoreMap != null && soiScoreMap.containsKey(stock)) {
+                LOGGER.debug("score != -1 && soiScoreMap != null && soiScoreMap.containsKey(stock)");
                 // Initialise array list if null.
                 soiScoreMap.computeIfAbsent(stock, k -> new ArrayList<>());
                 soiScoreMap.get(stock).add(score);
@@ -221,7 +244,7 @@ public class Crawler extends WebCrawler {
             // Mark stock with the latest sentiment score.
             stock.setLatestSentimentScore(mode);
         });
-        
+        LOGGER.debug("soiScoreMap size: " + soiScoreMap.size());
         publish(soiScoreMap);
     }
     
@@ -232,7 +255,10 @@ public class Crawler extends WebCrawler {
      * @param map
      */
     public void publish(HashMap<Stock, ArrayList<Integer>> map) {
+        LOGGER.debug("");
         if (terminationListener != null) {
+            LOGGER.debug("terminationListener != null");
+            LOGGER.debug("map size: " + map.size());
             terminationListener.onTermination(map);
         }
     }

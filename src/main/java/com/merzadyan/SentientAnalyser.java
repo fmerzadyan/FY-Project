@@ -9,11 +9,9 @@ import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
-import org.ahocorasick.trie.Trie;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -21,10 +19,50 @@ public class SentientAnalyser {
     // org.apache.log4j.Logger.
     private static final Logger LOGGER = Logger.getLogger(SentientAnalyser.class.getName());
     
+    private static final StanfordCoreNLP sentimentPipeline = getSentimentPipeline();
+    
+    private static final StanfordCoreNLP namedEntityPipeline = getNamedEntityPipeline();
+    
+    private static StanfordCoreNLP getSentimentPipeline() {
+        // Disable logs.
+        RedwoodConfiguration.empty().capture(System.out).apply();
+        
+        Properties properties = new Properties();
+        // Remove tokenizer warnings.
+        // NOTE: 6 options for tokenize.options: noneDelete, firstDelete, allDelete, noneKeep, firstKeep, allKeep
+        properties.setProperty("tokenize.options", "untokenizable=noneKeep");
+        // Parse annotator is required for sentiment?
+        properties.setProperty("annotators", "tokenize, ssplit, pos, parse, sentiment");
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(properties);
+        
+        // Re-enable logs.
+        RedwoodConfiguration.current().clear().apply();
+        
+        return pipeline;
+    }
+    
+    private static StanfordCoreNLP getNamedEntityPipeline() {
+        // Disable logs.
+        RedwoodConfiguration.empty().capture(System.out).apply();
+        
+        Properties properties = new Properties();
+        // Remove tokenizer warnings.
+        // NOTE: 6 options for tokenize.options: noneDelete, firstDelete, allDelete, noneKeep, firstKeep, allKeep
+        properties.setProperty("tokenize.options", "untokenizable=noneKeep");
+        properties.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner");
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(properties);
+        
+        // Re-enable logs.
+        RedwoodConfiguration.current().clear().apply();
+        
+        return pipeline;
+    }
+    
     /**
      * Taken from https://blog.openshift
      * .com/day-20-stanford-corenlp-performing-sentiment-analysis-of-twitter-using-java/
      *
+     * @param text
      * @param text
      * @return fine-grain sentiment score in a rage of 0-4; returns -1 in the case of an error.
      * <ol start=0>
@@ -34,31 +72,18 @@ public class SentientAnalyser {
      * <li>Somewhat positive</li>
      * <li>Positive</li>
      * </ol>
+     * @throws Exception unknown/unexpected emitted from Stanford CoreNLP.
      */
-    public static int findSentiment(String text) {
+    public static int findSentiment(String text) throws Exception {
         if (text == null || text.isEmpty()) {
             return -1;
         }
         
-        // Disable logs.
-        RedwoodConfiguration.empty().capture(System.out).apply();
-        
-        Properties properties = new Properties();
-        // Remove tokenizer warnings.
-        properties.setProperty("tokenize.options", "untokenizable=NoneKeep");
-        // Parse annotator is required for sentiment?
-        properties.setProperty("annotators", "tokenize, ssplit, sentiment");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(properties);
-        
-        // Re-enable logs.
-        RedwoodConfiguration.current().clear().apply();
-        
-        Annotation document = pipeline.process(text);
+        Annotation document = sentimentPipeline.process(text);
         List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
         
         ArrayList<Integer> documentSentiment = new ArrayList<>();
         
-        // TODO: train NER classifier to recognise SOI from SOIRegistry.
         // Retrieve the sentiment from each sentence.
         for (CoreMap sentence : sentences) {
             Tree tree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
@@ -84,81 +109,55 @@ public class SentientAnalyser {
     
     /**
      * Extracts the company name based on the reasonable assumption that the company name is usually present
-     * in the title of the article.
+     * in the text of the article.
      *
-     * @param title
+     * @param text
      * @param trie
-     * @return
+     * @return null in the case of an error or target company was not found in the (text| soi.txt| trie).
+     * @throws Exception unknown/unexpected emitted from Stanford CoreNLP.
      */
-    public static String identifyEntity(String title, org.ahocorasick.trie.Trie trie) {
-        if (title == null || title.isEmpty()) {
+    public static String identifyOrganisationEntity(String text, org.ahocorasick.trie.Trie trie) throws Exception {
+        if (text == null || text.isEmpty()) {
             return null;
         }
         
-        // Disable logs.
-        RedwoodConfiguration.empty().capture(System.out).apply();
-        
-        Properties properties = new Properties();
-        // Remove tokenizer warnings.
-        properties.setProperty("tokenize.options", "untokenizable=NoneKeep");
-        properties.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(properties);
-        
-        // Re-enable logs.
-        RedwoodConfiguration.current().clear().apply();
-        
-        
-        Annotation document = pipeline.process(title);
+        Annotation document = namedEntityPipeline.process(text);
         List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
+        List<String> organisations = new ArrayList<>();
         
-        ArrayList<Integer> documentSentiment = new ArrayList<>();
-        
-        String entity = null;
-        // TODO: train NER classifier to recognise SOI from SOIRegistry.
-        // Retrieve the sentiment from each sentence.
         for (CoreMap sentence : sentences) {
+            int previousCount = 0;
+            int count = 0;
             for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
                 String word = token.get(CoreAnnotations.TextAnnotation.class);
-                String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
-                String namedEntity = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
-                if (namedEntity.equals("ORGANIZATION")) {
-                    LOGGER.debug("word: " + word + " pos: " + pos + " namedEntity: " + namedEntity);
-                    if (trie.containsMatch(word)) {
-                        entity = word;
+                int previousWordIndex;
+                String unknownEntityType = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
+                if (unknownEntityType.equals("ORGANIZATION")) {
+                    count++;
+                    if (previousCount != 0 && (previousCount + 1) == count) {
+                        previousWordIndex = organisations.size() - 1;
+                        String previousWord = organisations.get(previousWordIndex);
+                        organisations.remove(previousWordIndex);
+                        previousWord = previousWord.concat(" " + word);
+                        organisations.add(previousWordIndex, previousWord);
+                        continue;
                     }
+                    organisations.add(word);
+                    previousCount = count;
+                } else {
+                    count = 0;
+                    previousCount = 0;
                 }
             }
         }
         
-        return entity;
-    }
-    
-    public static void main(String[] args) {
-        // Test #identifyEntity.
-        HashSet<Stock> stockSet = SOIRegistry.getInstance().getStockSet();
-        ArrayList<String> companyKeys = new ArrayList<>();
-        for (Stock stock : stockSet) {
-            if (stock != null) {
-                // NOTE: case does not matter when processed; case is ignored as stated in trie construction.
-                if (stock.getCompany() != null && !stock.getCompany().isEmpty()) {
-                    companyKeys.add(stock.getCompany());
-                }
-                if (stock.getSymbol() != null && !stock.getSymbol().isEmpty()) {
-                    companyKeys.add(stock.getSymbol());
-                }
+        for (String entity : organisations) {
+            if (trie.containsMatch(entity)) {
+                return entity;
             }
         }
         
-        // See https://github.com/robert-bor/aho-corasick
-        Trie trie = Trie.builder()
-                // IMPORTANT: ignoreCase() must be called before adding keywords.
-                .ignoreCase()
-                .addKeywords(companyKeys)
-                .build();
-        
-        String title = "Amid the consumer privacy revelations, Barclays is receiving more and more pressure " +
-                "to explain themselves.";
-        String company = SentientAnalyser.identifyEntity(title, trie);
-        LOGGER.debug("The company is:  " + company);
+        // Defaults to returning null.
+        return null;
     }
 }
