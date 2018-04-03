@@ -277,18 +277,14 @@ public class CrawlerManager {
     
     public static void main(String[] args) {
         CrawlerTerminationListener listener = soiScoreMap -> {
-            LOGGER.debug("MainWindow #onTermination");
+            LOGGER.debug("#onTermination");
             if (soiScoreMap == null) {
-                LOGGER.debug("soiScore == null");
                 return;
             }
             
-            LOGGER.debug("soiScore != null");
             try {
-                LOGGER.debug("soiScoreMap size: " + soiScoreMap.size());
                 soiScoreMap.forEach((stock, scores) -> {
                     String out = ("Stock: " + stock.getCompany()) +
-                            " Symbol: " + stock.getSymbol() +
                             " Symbol: " + stock.getSymbol() +
                             " Stock Exchange: " + stock.getStockExchange() +
                             " Sentiment Score: " + stock.getLatestSentimentScore();

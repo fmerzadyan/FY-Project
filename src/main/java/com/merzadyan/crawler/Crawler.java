@@ -14,6 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -108,8 +109,6 @@ public class Crawler extends WebCrawler {
      */
     @Override
     public boolean shouldVisit(Page referringPage, WebURL url) {
-        // TODO: benchmark testing to see performance...
-        
         String href = url.getURL().toLowerCase();
         // Determines whether href contains one of the file extensions (to not crawl).
         boolean matchesFilter = FILTERS.matcher(href).matches();
@@ -125,7 +124,6 @@ public class Crawler extends WebCrawler {
             HtmlParseData htmlParseData = (HtmlParseData) referringPage.getParseData();
             Document document = Jsoup.parseBodyFragment(htmlParseData.getHtml());
             
-            LOGGER.debug("document.body().text(): " + document.body().text());
             boolean firstMatch = trie != null && trie.firstMatch(document.body().text()) != null;
             LOGGER.debug("firstMatch: " + firstMatch);
             
@@ -134,7 +132,7 @@ public class Crawler extends WebCrawler {
             return firstMatch;
         }
         
-        LOGGER.debug("Returning false...");
+        LOGGER.debug("Returning false.");
         // Defaults to false since either links visited < 1 or referring page is not instance of HtmlParseData.
         return false;
     }
@@ -156,34 +154,27 @@ public class Crawler extends WebCrawler {
             Element body = document.body();
             String contentText = body.text();
             Set<WebURL> links = htmlParseData.getOutgoingUrls();
-            LOGGER.debug("\n");
-            LOGGER.debug("\n");
-            LOGGER.debug("\n");
-            LOGGER.debug("\n");
-            LOGGER.debug("\n");
-            LOGGER.debug("\n");
             LOGGER.debug("URL: " + url);
             LOGGER.debug("Number of outgoing links: " + links.size());
             LOGGER.debug("Text length: " + contentText.length());
-            LOGGER.debug(contentText);
             
-            LOGGER.debug("title: " + document.title());
             // #identifyOrganisationEntity returns a non-null result if the title contains a SOI.
             String company = null;
             try {
-                company = SentientAnalyser.identifyOrganisationEntity(document.title(), trie);
+                company = SentientAnalyser.identifyOrganisationEntity(contentText, trie);
             } catch (Exception e) {
                 LOGGER.debug(e);
             }
             LOGGER.debug("company: " + company);
             // Exit page if the result is null.
             if (company == null) {
+                LOGGER.debug("#identifyOrganisationEntity returned null. Exiting #visit.");
                 return;
             }
             
             Stock stock = new Stock();
             stock.setCompany(company);
-    
+            
             int score = -1;
             try {
                 score = SentientAnalyser.findSentiment(contentText);
@@ -192,11 +183,17 @@ public class Crawler extends WebCrawler {
             }
             LOGGER.debug("Score: " + score);
             // Disregard -1 returns.
-            if (score != -1 && soiScoreMap != null && soiScoreMap.containsKey(stock)) {
-                LOGGER.debug("score != -1 && soiScoreMap != null && soiScoreMap.containsKey(stock)");
-                // Initialise array list if null.
+            if (score != -1) {
+                LOGGER.debug("Score != -1");
+                if (soiScoreMap == null) {
+                    soiScoreMap = new HashMap<>();
+                }
+                
+                // Initialise scores array list associated with stock if null.
                 soiScoreMap.computeIfAbsent(stock, k -> new ArrayList<>());
                 soiScoreMap.get(stock).add(score);
+            } else {
+                LOGGER.debug("Score == -1");
             }
         }
     }
@@ -210,41 +207,46 @@ public class Crawler extends WebCrawler {
     public void onBeforeExit() {
         soiScoreMap.forEach((stock, scores) -> {
             // The array facilitates tallying of scores.
-            int[] tallyScores = new int[5];
+            int[] histogram = new int[5];
             // Determine the most frequent sentiment score for this stock.
             for (int score : scores) {
                 switch (score) {
                     case 0:
-                        tallyScores[0] += 1;
+                        histogram[0] += 1;
                         break;
                     case 1:
-                        tallyScores[1] += 1;
+                        histogram[1] += 1;
                         break;
                     case 2:
-                        tallyScores[2] += 1;
+                        histogram[2] += 1;
                         break;
                     case 3:
-                        tallyScores[3] += 1;
+                        histogram[3] += 1;
                         break;
                     case 4:
-                        tallyScores[4] += 1;
+                        histogram[4] += 1;
                         break;
                     default:
-                        LOGGER.error("score: " + score);
                         break;
                 }
             }
-            int mode = -1;
+            int highestFrequency = -1, indexOfHighestFrequency = -1;
+            
             // Determine largest value in array thus most frequent sentiment score.
-            for (int score : tallyScores) {
-                if (score > mode) {
-                    mode = score;
+            for (int i = 0; i < histogram.length; i++) {
+                int frequency = histogram[i];
+                if (frequency > highestFrequency) {
+                    highestFrequency = frequency;
+                    indexOfHighestFrequency = i;
                 }
             }
+            
+            LOGGER.debug("stock: " + stock.getCompany() + " histogram: " + Arrays.toString(histogram) +
+                    " highestFrequency: " + highestFrequency + " indexOfHighestFrequency: " + indexOfHighestFrequency);
             // Mark stock with the latest sentiment score.
-            stock.setLatestSentimentScore(mode);
+            stock.setLatestSentimentScore(indexOfHighestFrequency);
         });
-        LOGGER.debug("soiScoreMap size: " + soiScoreMap.size());
+        
         publish(soiScoreMap);
     }
     
@@ -254,11 +256,8 @@ public class Crawler extends WebCrawler {
      *
      * @param map
      */
-    public void publish(HashMap<Stock, ArrayList<Integer>> map) {
-        LOGGER.debug("");
+    private void publish(HashMap<Stock, ArrayList<Integer>> map) {
         if (terminationListener != null) {
-            LOGGER.debug("terminationListener != null");
-            LOGGER.debug("map size: " + map.size());
             terminationListener.onTermination(map);
         }
     }

@@ -96,7 +96,6 @@ public class MainWindow extends Application {
                     // consoleTextArea.appendText("\n");
                     String out = ("Stock: " + stock.getCompany()) +
                             " Symbol: " + stock.getSymbol() +
-                            " Symbol: " + stock.getSymbol() +
                             " Stock Exchange: " + stock.getStockExchange() +
                             " Sentiment Score: " + stock.getLatestSentimentScore();
                     // consoleTextArea.appendText(out.toString());

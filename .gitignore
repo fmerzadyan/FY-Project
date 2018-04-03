@@ -130,3 +130,5 @@ $RECYCLE.BIN/
 src/main/java/com/merzadyan/TODO\.md
 # Used for impromptu and transient testing - it has a public void main method for quick running.
 src/main/java/com/merzadyan/Test\.java
+
+\.idea/codeStyles/

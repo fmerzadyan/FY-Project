@@ -8,6 +8,7 @@ public class Stock implements Comparator {
     private String stockExchange;
     /**
      * Default sentiment score is -1 indicating that it has not been updated with a sentiment score yet.
+     * Calculated by extracting the mode value of sentiment scores for this stock.
      */
     private int latestSentimentScore;
     
@@ -31,11 +32,33 @@ public class Stock implements Comparator {
     
     @Override
     public boolean equals(Object object) {
-        if (object == null || object instanceof Stock) {
+        if (this == object) {
+            return true;
+        }
+        
+        if (!(object instanceof Stock)) {
             return false;
         }
         
-        return this.symbol.equals(((Stock) object).symbol);
+        Stock comparee = (Stock) object;
+        return latestSentimentScore == comparee.latestSentimentScore &&
+                (company == null ? comparee.company == null : company.equals(comparee.company)) &&
+                (symbol == null ? comparee.symbol == null : symbol.equals(comparee.symbol)) &&
+                (stockExchange == null ? comparee.stockExchange == null : stockExchange.equals(comparee.stockExchange));
+    }
+    
+    @Override
+    public int hashCode() {
+        // See Josh Bloch's Effective Java for reference.
+        // Arbitrary prime number.
+        int result = 23;
+        
+        result = 37 * result + latestSentimentScore;
+        result = 37 * result + (company == null ? 0 : company.hashCode());
+        result = 37 * result + (symbol == null ? 0 : symbol.hashCode());
+        result = 37 * result + (stockExchange == null ? 0 : stockExchange.hashCode());
+        
+        return result;
     }
     
     public String getCompany() {
