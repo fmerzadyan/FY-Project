@@ -27,12 +27,12 @@ public class Stock implements Comparator, Comparable {
     public int compare(Object o1, Object o2) {
         Stock s1 = (Stock) o1, s2 = (Stock) o2;
         
-        return s1.getCompany().compareToIgnoreCase(s2.getCompany());
+        return s1.company.compareToIgnoreCase(s2.company);
     }
     
     @Override
     public int compareTo(Object o) {
-        return this.getCompany().compareToIgnoreCase(((Stock) o).getCompany());
+        return company.compareToIgnoreCase(((Stock) o).company);
     }
     
     @Override

@@ -1,5 +1,7 @@
 package com.merzadyan.crawler;
 
+import com.merzadyan.SeedUrl;
+import com.merzadyan.SeedUrlRegistry;
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
@@ -37,6 +39,9 @@ public class CrawlerManager {
         public static final String DEFAULT_TEST_MODE = null;
     }
     
+    /**
+     * IMPORTANT MODE: for testing, debugging and presentation purposes.
+     */
     public static class MODE {
         public static final String TEST_MODE_ONE = "TEST_MODE_ONE";
         public static final String TEST_MODE_TWO = "TEST_MODE_TWO";
@@ -120,9 +125,9 @@ public class CrawlerManager {
             LOGGER.debug("testMode: " + testMode);
             switch (testMode) {
                 case MODE.TEST_MODE_ONE:
-                    LOGGER.debug("Adding merzadyan.com seed url.");
+                    LOGGER.debug("Adding " + SeedUrlRegistry.TEST_MODE_ONE_URL + " as a seed url.");
                     // IMPORTANT NOTE: http:// is required for the url to be valid.
-                    controller.addSeed("http://merzadyan.com");
+                    controller.addSeed(SeedUrlRegistry.TEST_MODE_ONE_URL);
                     break;
                 case MODE.TEST_MODE_TWO:
                     break;
@@ -135,20 +140,20 @@ public class CrawlerManager {
                      * which are found in these pages
                      */
                     LOGGER.debug("Test mode invalid - using default configs.");
-                    // TODO: find suitable seed URLs.
-                    // TODO: seed URL management - e.g. separate class?
-                    controller.addSeed("https://uk.finance.yahoo.com/");
-                    controller.addSeed("http://www.bbc.co.uk/news/business/markets/europe/lse_ukx");
-                    controller.addSeed("https://uk.investing.com/indices/uk-100-news");
-                    controller.addSeed("https://www.economist.com/topics/ftse-100-index");
+                    for (SeedUrl url : SeedUrlRegistry.getInstance().getUrlSet()) {
+                        if (url.getType() == SeedUrl.Type.DEFAULT) {
+                            controller.addSeed(url.getUrl());
+                        }
+                    }
                     break;
             }
         } else {
             LOGGER.debug("(Default configs.");
-            controller.addSeed("https://uk.finance.yahoo.com/");
-            controller.addSeed("http://www.bbc.co.uk/news/business/markets/europe/lse_ukx");
-            controller.addSeed("https://uk.investing.com/indices/uk-100-news");
-            controller.addSeed("https://www.economist.com/topics/ftse-100-index");
+            for (SeedUrl url : SeedUrlRegistry.getInstance().getUrlSet()) {
+                if (url.getType() == SeedUrl.Type.DEFAULT) {
+                    controller.addSeed(url.getUrl());
+                }
+            }
         }
         
         // A crawler factory is required to feed data into the crawler.

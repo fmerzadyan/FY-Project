@@ -2,6 +2,8 @@ package com.merzadyan.ui;
 
 import com.merzadyan.Common;
 import com.merzadyan.SOIRegistry;
+import com.merzadyan.SeedUrl;
+import com.merzadyan.SeedUrlRegistry;
 import com.merzadyan.Stock;
 import com.merzadyan.TextAreaAppender;
 import com.merzadyan.crawler.CrawlerManager;
@@ -20,8 +22,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -55,11 +60,47 @@ public class MainWindow extends Application {
      */
     @FXML
     private TextArea consoleTextArea;
-    
     @FXML
     private Label hhmmssLbl;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> timerHandler;
+    
+    /*
+     * Seed URLs tab.
+     */
+    @FXML
+    private TableView<SeedUrl> seedUrlTableView;
+    @FXML
+    private TableColumn<SeedUrl, String> urlTblCol,
+            typeTblCol;
+    
+    @FXML
+    private ObservableList<SeedUrl> seedUrlObservableList;
+    @FXML
+    private ComboBox seedUrlOptionsComboBox;
+    @FXML
+    private TextField seedUrlTextField;
+    @FXML
+    private Button addSeedUrlBtn,
+            removeSeedUrlBtn;
+    
+    /*
+     * SOI Registry tab.
+     */
+    @FXML
+    private Slider preselectedStockSlider;
+    @FXML
+    private ComboBox preselectedStocksComboBox;
+    @FXML
+    private TextField companyNameTextField,
+            tickerSymbolTextField,
+            stockExchangeTextField;
+    @FXML
+    private Button addSoiBtn,
+            removeSoiBtn;
+    @FXML
+    private ListView soiRegistryListView;
+    private ObservableList<Stock> soiObservableList;
     
     /*
      * Config tab.
@@ -73,48 +114,10 @@ public class MainWindow extends Application {
             politenessDelaySlider,
             includeHTTPSPagesSlider,
             includeBinaryContentCrawlingSlider,
-            resumableCrawlingSlider;
-    
-    /*
-     * SOI Registry tab.
-     */
-    @FXML
-    private Slider preselectedStockSlider;
-    
-    @FXML
-    private ComboBox preselectedStocksComboBox;
-    
-    @FXML
-    private TextField companyNameTextField,
-            tickerSymbolTextField,
-            stockExchangeTextField;
-    
-    @FXML
-    private Button addSOIBtn,
-            removeSOIBtn;
-    
-    @FXML
-    private ListView soiRegistryListView;
-    private ObservableList<Stock> soiObservableList;
-    
-    /*
-     * Seed URLs tab.
-     */
+            resumableCrawlingSlider,
+            testSlider;
     @FXML
     private ComboBox testModeComboBox;
-    
-    @FXML
-    private Slider testSlider;
-    
-    @FXML
-    private TextField seedUrlTextField;
-    
-    @FXML
-    private Button addSeedUrlBtn,
-            removeSeedUrlBtn;
-    
-    @FXML
-    private ListView seedUrlsListView;
     
     private class ResultsCallback implements CrawlerTerminationListener {
         @Override
@@ -159,21 +162,6 @@ public class MainWindow extends Application {
      */
     @FXML
     public void initialize() {
-        /*
-         * Main tab.
-         */
-        TextAreaAppender.setTextArea(consoleTextArea);
-        consoleTextArea.appendText("Started application.\n");
-        
-        resultsCallback = new ResultsCallback();
-        crawlerManager = new CrawlerManager(resultsCallback);
-        
-        /*
-         * Config tab.
-         */
-        userAgentNameTextField.setText(crawlerManager.getUserAgentString());
-        dataDumpTextField.setText(crawlerManager.getCrawlStorageFolder());
-        
         // Use on, off values instead of 0, 1 in sliders.
         StringConverter<Double> binaryLabelFormat = (new StringConverter<Double>() {
             @Override
@@ -193,9 +181,30 @@ public class MainWindow extends Application {
             }
         });
         
-        includeHTTPSPagesSlider.setLabelFormatter(binaryLabelFormat);
-        includeBinaryContentCrawlingSlider.setLabelFormatter(binaryLabelFormat);
-        resumableCrawlingSlider.setLabelFormatter(binaryLabelFormat);
+        /*
+         * Main tab.
+         */
+        TextAreaAppender.setTextArea(consoleTextArea);
+        consoleTextArea.appendText("Started application.\n");
+        
+        resultsCallback = new ResultsCallback();
+        crawlerManager = new CrawlerManager(resultsCallback);
+        
+        /*
+         * Seed URLs tab.
+         */
+        seedUrlObservableList = FXCollections.observableArrayList();
+        seedUrlObservableList.addAll(SeedUrlRegistry.getInstance().getUrlSet());
+        urlTblCol.setCellValueFactory(new PropertyValueFactory<>("url"));
+        typeTblCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        seedUrlTableView.setItems(seedUrlObservableList);
+        
+        seedUrlOptionsComboBox.getItems().clear();
+        seedUrlOptionsComboBox.getItems().addAll(
+                "Use default seed URLs only.",
+                "Use both default and custom seed URLs.",
+                "Use custom seed URLs only."
+        );
         
         /*
          * SOI Registry tab.
@@ -240,8 +249,15 @@ public class MainWindow extends Application {
         preselectedStocksComboBox.getItems().addAll(SOIRegistry.getInstance().getDefaultStockSet());
         
         /*
-         * Seed URLs tab.
+         * Config tab.
          */
+        userAgentNameTextField.setText(crawlerManager.getUserAgentString());
+        dataDumpTextField.setText(crawlerManager.getCrawlStorageFolder());
+        
+        includeHTTPSPagesSlider.setLabelFormatter(binaryLabelFormat);
+        includeBinaryContentCrawlingSlider.setLabelFormatter(binaryLabelFormat);
+        resumableCrawlingSlider.setLabelFormatter(binaryLabelFormat);
+        
         testModeComboBox.getItems().clear();
         testModeComboBox.getItems().addAll(
                 CrawlerManager.MODE.TEST_MODE_ONE,
@@ -290,6 +306,24 @@ public class MainWindow extends Application {
         
         if (crawlerManager != null) {
             crawlerManager.stopCrawl();
+        }
+    }
+    
+    public void addSeedUrl() {
+        // TODO: take the values from the seed url options combo box.
+        String url = seedUrlTextField.getText().trim().toLowerCase();
+        SeedUrl seedUrl = new SeedUrl(url, SeedUrl.Type.USER_DEFINED);
+        // Prevent duplicate entries.
+        if (!seedUrlObservableList.contains(seedUrl)) {
+            seedUrlObservableList.add(seedUrl);
+        }
+    }
+    
+    public void removeSeedUrl() {
+        SeedUrl seedUrl = seedUrlTableView.getSelectionModel().getSelectedItem();
+        if (seedUrl != null) {
+            SeedUrlRegistry.getInstance().remove(seedUrl);
+            seedUrlObservableList.remove(seedUrl);
         }
     }
     
@@ -378,7 +412,7 @@ public class MainWindow extends Application {
                     Common.isNullOrEmptyString(stockExchange)) {
                 return;
             }
-    
+            
             stock = new Stock(company, symbol, stockExchange);
         }
         // Prevent duplicate entries.
