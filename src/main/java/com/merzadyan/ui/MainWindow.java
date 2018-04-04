@@ -7,6 +7,7 @@ import com.merzadyan.TextAreaAppender;
 import com.merzadyan.crawler.CrawlerManager;
 import com.merzadyan.crawler.CrawlerTerminationListener;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -17,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
@@ -26,8 +28,16 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+
+import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class MainWindow extends Application {
     private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
@@ -35,11 +45,22 @@ public class MainWindow extends Application {
     private CrawlerManager crawlerManager;
     private ResultsCallback resultsCallback;
     
+    /**
+     * Indicates the current state of the crawlers. True if crawling is currently being performed.
+     * False if crawling has not yet been started or the #onTermination callback has not been called.
+     */
+    private boolean currentlyCrawling;
+    
     /*
      * Main tab.
      */
     @FXML
     private TextArea consoleTextArea;
+    
+    @FXML
+    private Label hhmmssLbl;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledFuture<?> timerHandler;
     
     /*
      * Config tab.
@@ -89,28 +110,25 @@ public class MainWindow extends Application {
     private class ResultsCallback implements CrawlerTerminationListener {
         @Override
         public void onTermination(HashMap<Stock, ArrayList<Integer>> soiScoreMap) {
-            LOGGER.debug("MainWindow #onTermination");
+            LOGGER.debug("#onTermination");
+            
+            stopTimer();
+            
+            currentlyCrawling = false;
+            
             if (soiScoreMap == null) {
-                LOGGER.debug("soiScore == null");
                 return;
             }
-    
-            LOGGER.debug("soiScore != null");
+            
             try {
-                // FIXME: soiScoreMap size is 0. Should not be size 0.
-                LOGGER.debug("soiScoreMap size: " + soiScoreMap.size());
                 soiScoreMap.forEach((stock, scores) -> {
-                    // consoleTextArea.appendText("\n");
                     String out = ("Stock: " + stock.getCompany()) +
                             " Symbol: " + stock.getSymbol() +
                             " Stock Exchange: " + stock.getStockExchange() +
                             " Sentiment Score: " + stock.getLatestSentimentScore();
-                    // consoleTextArea.appendText(out.toString());
-                    // consoleTextArea.appendText("\n");
                     LOGGER.debug("result: " + out);
                 });
             } catch (Exception e) {
-                LOGGER.debug("Something went wrong.");
                 LOGGER.fatal(e);
             }
         }
@@ -219,6 +237,11 @@ public class MainWindow extends Application {
     
     public void startCrawlers() {
         LOGGER.debug("startCrawlers");
+        
+        if (currentlyCrawling) {
+            return;
+        }
+        
         try {
             // TODO: TextArea cannot handle vast amount of input text from log4j and becomes unresponsive.
             // See https://stackoverflow.com/questions/33078241/javafx-application-freeze-when-i-append-log4j-to-textarea
@@ -239,7 +262,7 @@ public class MainWindow extends Application {
                 crawlerManager.setTest(false);
                 crawlerManager.setTestMode(null);
             }
-            
+            startTimer();
             crawlerManager.startNonBlockingCrawl();
         } catch (Exception ex) {
             LOGGER.debug(ex);
@@ -248,6 +271,11 @@ public class MainWindow extends Application {
     
     public void stopCrawlers() {
         LOGGER.debug("stopCrawlers");
+        
+        if (!currentlyCrawling) {
+            return;
+        }
+        
         if (crawlerManager != null) {
             crawlerManager.stopCrawl();
         }
@@ -320,4 +348,44 @@ public class MainWindow extends Application {
     private double adapt(boolean bool) {
         return bool ? 1d : 0d;
     }
+    
+    /**
+     * Starts internal timer used to calculate the elapsed time for the crawling process.
+     */
+    private void startTimer() {
+        // IMPORTANT: #currentTimeMillis returns one hour before - add one hour to correct this.
+        final long startTime = System.currentTimeMillis() + (60 * 60 * 1000);
+        final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
+        
+        final Runnable updateElapsedTimeRunnable = () -> {
+            // Avoid throwing IllegalStateException by running from a non-JavaFX thread.
+            Platform.runLater(
+                    () -> {
+                        long elapsedTime = System.currentTimeMillis() - startTime;
+                        hhmmssLbl.setText(formatter.format(new Date(elapsedTime)));
+                    }
+            );
+        };
+        // Schedule automatically cancelling/nullifying the timer if not cancelled already by then.
+        int autoCancelBy = 4,
+                // Schedule task to run every x milliseconds.
+                scheduleEvery = 1000;
+        timerHandler =
+                scheduler.scheduleAtFixedRate(updateElapsedTimeRunnable, 0, scheduleEvery, MILLISECONDS);
+        scheduler.schedule(() -> {
+            timerHandler.cancel(true);
+        }, autoCancelBy, HOURS);
+    }
+    
+    /**
+     * Stops internal timer used to calculate the elapsed time for the crawling process.
+     */
+    private void stopTimer() {
+        if (timerHandler != null) {
+            scheduler.schedule(() -> {
+                timerHandler.cancel(true);
+            }, 0, MILLISECONDS);
+        }
+    }
+    
 }
