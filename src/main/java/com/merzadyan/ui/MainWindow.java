@@ -8,8 +8,6 @@ import com.merzadyan.crawler.CrawlerManager;
 import com.merzadyan.crawler.CrawlerTerminationListener;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -226,12 +224,9 @@ public class MainWindow extends Application {
         );
         
         testSlider.setLabelFormatter(binaryLabelFormat);
-        toggleMode();
-        testSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                toggleMode();
-            }
+        toggleTest();
+        testSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            toggleTest();
         });
     }
     
@@ -253,15 +248,6 @@ public class MainWindow extends Application {
                 return;
             }
             
-            if (testSlider.getValue() == 1d) {
-                String operation = (String) testModeComboBox.getValue();
-                LOGGER.debug("Test Mode: " + operation);
-                crawlerManager.setTest(true);
-                crawlerManager.setTestMode((String) testModeComboBox.getValue());
-            } else {
-                crawlerManager.setTest(false);
-                crawlerManager.setTestMode(null);
-            }
             startTimer();
             crawlerManager.startNonBlockingCrawl();
         } catch (Exception ex) {
@@ -295,9 +281,12 @@ public class MainWindow extends Application {
         crawlerManager.setNumberOfCrawlers((int) numberOfCrawlersSlider.getValue());
         crawlerManager.setMaxDepthOfCrawling((int) maxDepthOfCrawlingSlider.getValue());
         crawlerManager.setPolitenessDelay((int) politenessDelaySlider.getValue());
-        crawlerManager.setIncludeHttpsPages(includeHTTPSPagesSlider.getValue() == 1d);
-        crawlerManager.setIncludeBinaryContentInCrawling(includeBinaryContentCrawlingSlider.getValue() == 1d);
-        crawlerManager.setResumableCrawling(resumableCrawlingSlider.getValue() == 1d);
+        crawlerManager.setIncludeHttpsPages(adapt(includeHTTPSPagesSlider.getValue()));
+        crawlerManager.setIncludeBinaryContentInCrawling(adapt(includeBinaryContentCrawlingSlider.getValue()));
+        crawlerManager.setResumableCrawling(adapt(resumableCrawlingSlider.getValue()));
+        
+        crawlerManager.setTest(adapt(testSlider.getValue()));
+        crawlerManager.setTestMode((String) testModeComboBox.getValue());
         
         // Provide visual feedback for the saving-configs action.
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -319,24 +308,16 @@ public class MainWindow extends Application {
         includeHTTPSPagesSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_INCLUDE_HTTPS_PAGES));
         includeBinaryContentCrawlingSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING));
         resumableCrawlingSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_RESUMABLE_CRAWLING));
+        testSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_TEST));
+        testModeComboBox.setValue(CrawlerManager.DEFAULT.DEFAULT_TEST_MODE);
     }
     
     /**
-     * Controls and toggles the states (enable/disable) of UI controls based on the current value
-     * of the testSlider in Seed URLs tab.
+     * Controls and toggles the states (enable/disable) of testModeComboBox on the current value
+     * of the testSlider.
      */
-    private void toggleMode() {
-        if (testSlider.getValue() == 1d) {
-            testModeComboBox.setDisable(false);
-            seedUrlTextField.setDisable(true);
-            addSeedUrlBtn.setDisable(true);
-            removeSeedUrlBtn.setDisable(true);
-        } else {
-            testModeComboBox.setDisable(true);
-            seedUrlTextField.setDisable(false);
-            addSeedUrlBtn.setDisable(false);
-            removeSeedUrlBtn.setDisable(false);
-        }
+    private void toggleTest() {
+        testModeComboBox.setDisable(!adapt(testSlider.getValue()));
     }
     
     /**
@@ -347,6 +328,16 @@ public class MainWindow extends Application {
      */
     private double adapt(boolean bool) {
         return bool ? 1d : 0d;
+    }
+    
+    /**
+     * Converts double value to corresponding boolean value.
+     *
+     * @param dbl
+     * @return
+     */
+    private boolean adapt(double dbl) {
+        return dbl == 1d;
     }
     
     /**

@@ -9,7 +9,16 @@ import org.apache.log4j.Logger;
 
 import java.util.HashSet;
 
-import static com.merzadyan.crawler.CrawlerManager.DEFAULT.*;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_CRAWL_STORAGE_FOLDER;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_INCLUDE_HTTPS_PAGES;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_MAX_DEPTH_OF_CRAWLING;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_NUMBER_OF_CRAWLERS;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_POLITENESS_DELAY;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_RESUMABLE_CRAWLING;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_TEST;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_TEST_MODE;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_USER_AGENT_STRING;
 
 public class CrawlerManager {
     public static class DEFAULT {
@@ -23,6 +32,9 @@ public class CrawlerManager {
         public static final boolean DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING = false;
         public static final boolean DEFAULT_INCLUDE_HTTPS_PAGES = true;
         public static final boolean DEFAULT_RESUMABLE_CRAWLING = true;
+        
+        public static final boolean DEFAULT_TEST = false;
+        public static final String DEFAULT_TEST_MODE = null;
     }
     
     public static class MODE {
@@ -70,6 +82,9 @@ public class CrawlerManager {
         includeBinaryContentInCrawling = DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING;
         includeHttpsPages = DEFAULT_INCLUDE_HTTPS_PAGES;
         resumableCrawling = DEFAULT_RESUMABLE_CRAWLING;
+        
+        test = DEFAULT_TEST;
+        testMode = DEFAULT_TEST_MODE;
     }
     
     public void startNonBlockingCrawl() throws Exception {
@@ -119,7 +134,7 @@ public class CrawlerManager {
                      * URLs that are fetched and then the crawler starts following links
                      * which are found in these pages
                      */
-                    LOGGER.debug("Adding other seed URLs.");
+                    LOGGER.debug("Test mode invalid - using default configs.");
                     // TODO: find suitable seed URLs.
                     // TODO: seed URL management - e.g. separate class?
                     controller.addSeed("https://uk.finance.yahoo.com/");
@@ -129,8 +144,7 @@ public class CrawlerManager {
                     break;
             }
         } else {
-            LOGGER.debug("Adding other seed URLS in ELSE block.");
-            LOGGER.debug("(test && testMode != null && !testMode.isEmpty() == false");
+            LOGGER.debug("(Default configs.");
             controller.addSeed("https://uk.finance.yahoo.com/");
             controller.addSeed("http://www.bbc.co.uk/news/business/markets/europe/lse_ukx");
             controller.addSeed("https://uk.investing.com/indices/uk-100-news");
