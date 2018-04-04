@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.TreeSet;
 
 /**
  * SOIRegistry (Stocks of Interest Registry) contains a list of stocks to watch during crawling process.
@@ -15,21 +15,24 @@ public class SOIRegistry {
     
     private static final SOIRegistry instance = new SOIRegistry();
     
-    private HashSet<Stock> stockSet;
+    private TreeSet<Stock> stockSet;
+    private TreeSet<Stock> defaultStockSet;
     
     private static final String DEFAULT_SOI_FILE_PATH = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\default-soi.txt";
     
     private SOIRegistry() {
-        stockSet = new HashSet<>();
+        stockSet = new TreeSet<>();
         String soiFilePath = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\soi.txt";
-        stockSet = extractStocks(soiFilePath);
+        stockSet = extractStocks(soiFilePath, false);
+        defaultStockSet = extractStocks(DEFAULT_SOI_FILE_PATH, true);
+        
     }
     
     public static SOIRegistry getInstance() {
         return instance;
     }
     
-    private HashSet<Stock> extractStocks(String soiFilePath) {
+    private TreeSet<Stock> extractStocks(String soiFilePath, boolean useDefault) {
         if (Common.isNullOrEmptyString(soiFilePath)) {
             LOGGER.debug("Error: file is not set.");
             return null;
@@ -41,11 +44,14 @@ public class SOIRegistry {
         }
         
         String filePath = soiFilePath;
-        if (Common.isEmptyFile(filePath)) {
+        if (Common.isEmptyFile(filePath) && useDefault) {
             filePath = DEFAULT_SOI_FILE_PATH;
+        } else if (Common.isEmptyFile(filePath) && !useDefault) {
+            LOGGER.error("Error: " + soiFilePath + " is empty and useDefault option is false.");
+            return null;
         }
         
-        HashSet<Stock> set = new HashSet<>();
+        TreeSet<Stock> set = new TreeSet<>();
         
         try {
             FileReader fileReader = new FileReader(filePath);
@@ -62,7 +68,10 @@ public class SOIRegistry {
                 String company = pair[0].trim().toLowerCase();
                 String symbol = pair[1].trim().toLowerCase();
                 // NOTE: since only FTSE-100 companies are listed in soi.txt then all are on LSE.
-                set.add(new Stock(company, symbol, "LSE"));
+                Stock stock = new Stock(company, symbol, "LSE");
+                if (!set.contains(stock)) {
+                    set.add(stock);
+                }
             }
         } catch (IOException ioEx) {
             LOGGER.error(ioEx);
@@ -71,7 +80,35 @@ public class SOIRegistry {
         return set;
     }
     
-    public HashSet<Stock> getStockSet() {
+    /**
+     * IMPORTANT NOTE: for every time, stocks are "added" on the UI, this method must be called to keep
+     * the the registry in sync with the UI.
+     *
+     * @param stock
+     */
+    public void add(Stock stock) {
+        if (!stockSet.contains(stock)) {
+            stockSet.add(stock);
+        }
+    }
+    
+    /**
+     * IMPORTANT NOTE: for every time, stocks are "removed" on the UI, this method must be called to keep
+     * the the registry in sync with the UI.
+     *
+     * @param stock
+     */
+    public void remove(Stock stock) {
+        if (stockSet.contains(stock)) {
+            stockSet.remove(stock);
+        }
+    }
+    
+    public TreeSet<Stock> getStockSet() {
         return stockSet;
+    }
+    
+    public TreeSet<Stock> getDefaultStockSet() {
+        return defaultStockSet;
     }
 }

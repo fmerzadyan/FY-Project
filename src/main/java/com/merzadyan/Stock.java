@@ -2,7 +2,7 @@ package com.merzadyan;
 
 import java.util.Comparator;
 
-public class Stock implements Comparator {
+public class Stock implements Comparator, Comparable {
     private String company;
     private String symbol;
     private String stockExchange;
@@ -28,6 +28,11 @@ public class Stock implements Comparator {
         Stock s1 = (Stock) o1, s2 = (Stock) o2;
         
         return s1.getCompany().compareToIgnoreCase(s2.getCompany());
+    }
+    
+    @Override
+    public int compareTo(Object o) {
+        return this.getCompany().compareToIgnoreCase(((Stock) o).getCompany());
     }
     
     @Override

@@ -7,7 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.TreeSet;
 
 /**
  * IMPORTANT NOTE: pass/fail results are dependent on soi.txt contents. If the organisation is not in soi.txt
@@ -19,7 +19,7 @@ public class TestSentientAnalyser {
     
     @BeforeClass
     public static void setup() {
-        HashSet<Stock> stockSet = SOIRegistry.getInstance().getStockSet();
+        TreeSet<Stock> stockSet = SOIRegistry.getInstance().getStockSet();
         ArrayList<String> companyKeys = new ArrayList<>();
         for (Stock stock : stockSet) {
             if (stock != null) {

@@ -23,6 +23,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 
@@ -78,9 +79,19 @@ public class MainWindow extends Application {
      * SOI Registry tab.
      */
     @FXML
+    private Slider preselectedStockSlider;
+    
+    @FXML
+    private ComboBox preselectedStocksComboBox;
+    
+    @FXML
     private TextField companyNameTextField,
             tickerSymbolTextField,
             stockExchangeTextField;
+    
+    @FXML
+    private Button addSOIBtn,
+            removeSOIBtn;
     
     @FXML
     private ListView soiRegistryListView;
@@ -189,34 +200,49 @@ public class MainWindow extends Application {
         /*
          * SOI Registry tab.
          */
-        // Retrieve the dictionary of stocks from SOIRegistry.
-        SOIRegistry soiRegistry = SOIRegistry.getInstance();
-        // Adapt the hash set to an array list.
-        ArrayList<Stock> list = new ArrayList<>(soiRegistry.getStockSet());
-        soiObservableList = FXCollections.observableList(list);
+        soiObservableList = FXCollections.observableList(new ArrayList<>());
+        soiObservableList.addAll(SOIRegistry.getInstance().getStockSet());
+        
         // Customise list view cells.
-        soiRegistryListView.setCellFactory(param -> new ListCell<Stock>() {
+        Callback stockCellCallback = new Callback() {
             @Override
-            protected void updateItem(Stock item, boolean empty) {
-                super.updateItem(item, empty);
-                
-                if (empty) {
-                    setText(null);
-                } else {
-                    setText(item.getCompany() + " <<<" + item.getSymbol() +
-                            ">>> [" + item.getStockExchange() + "]");
-                }
+            public Object call(Object param) {
+                return new ListCell<Stock>() {
+                    @Override
+                    protected void updateItem(Stock item, boolean empty) {
+                        super.updateItem(item, empty);
+                        
+                        if (empty) {
+                            setText(null);
+                        } else {
+                            setText(item.getCompany() + " <<<" + item.getSymbol() +
+                                    ">>> [" + item.getStockExchange() + "]");
+                        }
+                    }
+                };
             }
-        });
+        };
+        
+        // FIXME: first item in the list view cannot be selected.
+        soiRegistryListView.setCellFactory(stockCellCallback);
         // Sort stocks alphabetically.
         soiObservableList.sort((o1, o2) -> o1.getCompany().compareToIgnoreCase(o2.getCompany()));
         soiRegistryListView.setItems(soiObservableList);
+        
+        preselectedStockSlider.setLabelFormatter(binaryLabelFormat);
+        togglePreselectedStock();
+        preselectedStockSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            togglePreselectedStock();
+        });
+        
+        preselectedStocksComboBox.getItems().clear();
+        preselectedStocksComboBox.setCellFactory(stockCellCallback);
+        preselectedStocksComboBox.getItems().addAll(SOIRegistry.getInstance().getDefaultStockSet());
         
         /*
          * Seed URLs tab.
          */
         testModeComboBox.getItems().clear();
-        // TODO: reconsider item text and corresponding test operation; also use constant strings.
         testModeComboBox.getItems().addAll(
                 CrawlerManager.MODE.TEST_MODE_ONE,
                 CrawlerManager.MODE.TEST_MODE_TWO,
@@ -318,6 +344,55 @@ public class MainWindow extends Application {
      */
     private void toggleTest() {
         testModeComboBox.setDisable(!adapt(testSlider.getValue()));
+    }
+    
+    /**
+     * Controls and toggles the states (enable/disable) of UI controls on the current value
+     * of the preselectedStockSlider.
+     */
+    private void togglePreselectedStock() {
+        if (adapt(preselectedStockSlider.getValue())) {
+            preselectedStocksComboBox.setDisable(false);
+            companyNameTextField.setDisable(true);
+            tickerSymbolTextField.setDisable(true);
+            stockExchangeTextField.setDisable(true);
+        } else {
+            preselectedStocksComboBox.setDisable(true);
+            companyNameTextField.setDisable(false);
+            tickerSymbolTextField.setDisable(false);
+            stockExchangeTextField.setDisable(false);
+        }
+    }
+    
+    public void addSoi() {
+        boolean isPreselectedStock = adapt(preselectedStockSlider.getValue());
+        Stock stock;
+        if (isPreselectedStock) {
+            stock = (Stock) preselectedStocksComboBox.getValue();
+        } else {
+            String company = companyNameTextField.getText().trim().toLowerCase();
+            String symbol = tickerSymbolTextField.getText().trim().toLowerCase();
+            String stockExchange = stockExchangeTextField.getText().trim().toLowerCase();
+            
+            if (Common.isNullOrEmptyString(company) || Common.isNullOrEmptyString(symbol) ||
+                    Common.isNullOrEmptyString(stockExchange)) {
+                return;
+            }
+    
+            stock = new Stock(company, symbol, stockExchange);
+        }
+        // Prevent duplicate entries.
+        if (!soiObservableList.contains(stock)) {
+            soiObservableList.add(stock);
+        }
+    }
+    
+    public void removeSoi() {
+        Stock stock = (Stock) soiRegistryListView.getSelectionModel().getSelectedItem();
+        if (stock != null) {
+            SOIRegistry.getInstance().remove(stock);
+            soiObservableList.remove(stock);
+        }
     }
     
     /**

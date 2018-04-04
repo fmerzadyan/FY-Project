@@ -16,8 +16,8 @@ import org.jsoup.nodes.Element;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.compile;
@@ -78,7 +78,7 @@ public class Crawler extends WebCrawler {
             return;
         }
         
-        HashSet<Stock> stockSet = soiRegistry.getStockSet();
+        TreeSet<Stock> stockSet = soiRegistry.getStockSet();
         ArrayList<String> companyKeys = new ArrayList<>();
         for (Stock stock : stockSet) {
             if (stock != null) {
