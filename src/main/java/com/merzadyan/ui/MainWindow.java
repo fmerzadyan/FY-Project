@@ -314,9 +314,17 @@ public class MainWindow extends Application {
     public void addSeedUrl() {
         // TODO: take the values from the seed url options combo box.
         String url = seedUrlTextField.getText().trim().toLowerCase();
+        
+        if (Common.isNullOrEmptyString(url)) {
+            return;
+        }
+        
         SeedUrl seedUrl = new SeedUrl(url, SeedUrl.Type.USER_DEFINED);
         // Prevent duplicate entries.
-        if (!seedUrlObservableList.contains(seedUrl)) {
+        // IMPORTANT NOTE: using seedUrlObservableList#contains does not prevent duplicate entries.
+        // Despite the fact that same approach works for adding/removing SOI.
+        if (!SeedUrlRegistry.getInstance().getUrlSet().contains(seedUrl)) {
+            SeedUrlRegistry.getInstance().add(seedUrl);
             seedUrlObservableList.add(seedUrl);
         }
     }
@@ -419,6 +427,7 @@ public class MainWindow extends Application {
         }
         // Prevent duplicate entries.
         if (!soiObservableList.contains(stock)) {
+            SOIRegistry.getInstance().add(stock);
             soiObservableList.add(stock);
         }
     }

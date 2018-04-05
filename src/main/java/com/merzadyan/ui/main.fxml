@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 <TabPane fx:id="mainWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
          prefHeight="540.0" prefWidth="814.0" stylesheets="@main.css" tabClosingPolicy="UNAVAILABLE"
-         xmlns="http://javafx.com/javafx/8.0.151" xmlns:fx="http://javafx.com/fxml/1"
+         xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
          fx:controller="com.merzadyan.ui.MainWindow">
     <tabs>
         <Tab fx:id="MainTab" text="Main">
@@ -100,7 +100,8 @@
                                             <columns>
                                                 <TableColumn fx:id="urlTblCol" maxWidth="1.7976931348623157E308"
                                                              minWidth="200.0" prefWidth="300.0" text="URL:"/>
-                                                <TableColumn fx:id="typeTblCol" prefWidth="75.0" text="Type:"/>
+                                                <TableColumn fx:id="typeTblCol" maxWidth="1.7976931348623157E308"
+                                                             minWidth="100.0" prefWidth="150.0" text="Type:"/>
                                             </columns>
                                         </TableView>
                                     </children>
@@ -158,12 +159,12 @@
                                                     <children>
                                                         <Button fx:id="addSeedUrlBtn" cancelButton="true"
                                                                 defaultButton="true" minWidth="100.0"
-                                                                mnemonicParsing="false" text="Add"
-                                                                textAlignment="CENTER"/>
+                                                                mnemonicParsing="false" onAction="#addSeedUrl"
+                                                                text="Add" textAlignment="CENTER"/>
                                                         <Button fx:id="removeSeedUrlBtn" cancelButton="true"
                                                                 defaultButton="true" minWidth="100.0"
-                                                                mnemonicParsing="false" text="Remove"
-                                                                textAlignment="CENTER"/>
+                                                                mnemonicParsing="false" onAction="#removeSeedUrl"
+                                                                text="Remove" textAlignment="CENTER"/>
                                                     </children>
                                                 </HBox>
                                             </children>
