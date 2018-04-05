@@ -20,7 +20,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -73,9 +72,9 @@ public class MainWindow extends Application {
     @FXML
     private TableColumn<SeedUrl, String> urlTblCol,
             typeTblCol;
-    
     @FXML
     private ObservableList<SeedUrl> seedUrlObservableList;
+    
     @FXML
     private ComboBox seedUrlOptionsComboBox;
     @FXML
@@ -88,6 +87,14 @@ public class MainWindow extends Application {
      * SOI Registry tab.
      */
     @FXML
+    private TableView<Stock> soiRegistryTableView;
+    @FXML
+    private TableColumn<Stock, String> companyTblCol,
+            symbolTblCol,
+            stockExchangeTblCol;
+    private ObservableList<Stock> soiObservableList;
+    
+    @FXML
     private Slider preselectedStockSlider;
     @FXML
     private ComboBox preselectedStocksComboBox;
@@ -98,9 +105,6 @@ public class MainWindow extends Application {
     @FXML
     private Button addSoiBtn,
             removeSoiBtn;
-    @FXML
-    private ListView soiRegistryListView;
-    private ObservableList<Stock> soiObservableList;
     
     /*
      * Config tab.
@@ -181,6 +185,26 @@ public class MainWindow extends Application {
             }
         });
         
+        // Customise list view cells.
+        Callback stockCellCallback = new Callback() {
+            @Override
+            public Object call(Object param) {
+                return new ListCell<Stock>() {
+                    @Override
+                    protected void updateItem(Stock item, boolean empty) {
+                        super.updateItem(item, empty);
+                        
+                        if (empty) {
+                            setText(null);
+                        } else {
+                            setText(item.getCompany() + " <<<" + item.getSymbol() +
+                                    ">>> [" + item.getStockExchange() + "]");
+                        }
+                    }
+                };
+            }
+        };
+        
         /*
          * Main tab.
          */
@@ -209,34 +233,12 @@ public class MainWindow extends Application {
         /*
          * SOI Registry tab.
          */
-        soiObservableList = FXCollections.observableList(new ArrayList<>());
+        soiObservableList = FXCollections.observableArrayList();
         soiObservableList.addAll(SOIRegistry.getInstance().getStockSet());
-        
-        // Customise list view cells.
-        Callback stockCellCallback = new Callback() {
-            @Override
-            public Object call(Object param) {
-                return new ListCell<Stock>() {
-                    @Override
-                    protected void updateItem(Stock item, boolean empty) {
-                        super.updateItem(item, empty);
-                        
-                        if (empty) {
-                            setText(null);
-                        } else {
-                            setText(item.getCompany() + " <<<" + item.getSymbol() +
-                                    ">>> [" + item.getStockExchange() + "]");
-                        }
-                    }
-                };
-            }
-        };
-        
-        // FIXME: first item in the list view cannot be selected.
-        soiRegistryListView.setCellFactory(stockCellCallback);
-        // Sort stocks alphabetically.
-        soiObservableList.sort((o1, o2) -> o1.getCompany().compareToIgnoreCase(o2.getCompany()));
-        soiRegistryListView.setItems(soiObservableList);
+        companyTblCol.setCellValueFactory(new PropertyValueFactory<>("company"));
+        symbolTblCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
+        stockExchangeTblCol.setCellValueFactory(new PropertyValueFactory<>("stockExchange"));
+        soiRegistryTableView.setItems(soiObservableList);
         
         preselectedStockSlider.setLabelFormatter(binaryLabelFormat);
         togglePreselectedStock();
@@ -422,7 +424,7 @@ public class MainWindow extends Application {
     }
     
     public void removeSoi() {
-        Stock stock = (Stock) soiRegistryListView.getSelectionModel().getSelectedItem();
+        Stock stock = soiRegistryTableView.getSelectionModel().getSelectedItem();
         if (stock != null) {
             SOIRegistry.getInstance().remove(stock);
             soiObservableList.remove(stock);
