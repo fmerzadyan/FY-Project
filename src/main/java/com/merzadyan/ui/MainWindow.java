@@ -29,7 +29,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
@@ -136,6 +135,7 @@ public class MainWindow extends Application {
             stopTimer();
             
             currentlyCrawling = false;
+            startBtn.setDisable(false);
             
             if (soiScoreMap == null) {
                 return;
@@ -354,6 +354,7 @@ public class MainWindow extends Application {
             startTimer();
             crawlerManager.startNonBlockingCrawl();
             currentlyCrawling = true;
+            startBtn.setDisable(true);
         } catch (Exception ex) {
             LOGGER.debug(ex);
         }
