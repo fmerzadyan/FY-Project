@@ -77,7 +77,8 @@ public class MainWindow extends Application {
     private TableView<SeedUrl> seedUrlTableView;
     @FXML
     private TableColumn<SeedUrl, String> urlTblCol,
-            typeTblCol;
+            typeTblCol,
+            seedActionTblCol;
     @FXML
     private ObservableList<SeedUrl> seedUrlObservableList;
     
@@ -95,7 +96,8 @@ public class MainWindow extends Application {
     private TableColumn<Stock, String> companyTblCol,
             symbolTblCol,
             stockExchangeTblCol,
-            latestForecastTblCol;
+            forecastTblCol,
+            soiActionTblCol;
     private ObservableList<Stock> soiObservableList;
     
     @FXML
@@ -107,8 +109,7 @@ public class MainWindow extends Application {
             tickerSymbolTextField,
             stockExchangeTextField;
     @FXML
-    private Button addSoiBtn,
-            removeSoiBtn;
+    private Button addSoiBtn;
     
     /*
      * Config tab.
@@ -230,6 +231,47 @@ public class MainWindow extends Application {
         seedUrlObservableList.addAll(SeedUrlRegistry.getInstance().getUrlSet());
         urlTblCol.setCellValueFactory(new PropertyValueFactory<>("url"));
         typeTblCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        
+        // Custom cell factory is required to add button to table view cell.
+        Callback<TableColumn<SeedUrl, String>, TableCell<SeedUrl, String>> seedActionCellFactory =
+                new Callback<TableColumn<SeedUrl, String>, TableCell<SeedUrl, String>>() {
+                    @Override
+                    public TableCell call(final TableColumn<SeedUrl, String> param) {
+                        final TableCell<SeedUrl, String> cell = new TableCell<SeedUrl, String>() {
+                            final Button btn = new Button("Remove");
+                            
+                            @Override
+                            public void updateItem(String item, boolean empty) {
+                                super.updateItem(item, empty);
+                                
+                                if (empty) {
+                                    setGraphic(null);
+                                    setText(null);
+                                } else {
+                                    btn.setOnAction(event -> {
+                                        SeedUrl url = getTableView().getItems().get(getIndex());
+                                        LOGGER.debug(url.getUrl());
+                                        
+                                        if (!url.getType().equals(SeedUrl.Type.DEFAULT)) {
+                                            SeedUrlRegistry.getInstance().remove(url);
+                                            seedUrlObservableList.remove(url);
+                                        } else {
+                                            LOGGER.debug("Will not remove DEFAULT type url.");
+                                        }
+                                    });
+                                    setGraphic(btn);
+                                    setText(null);
+                                }
+                            }
+                        };
+                        
+                        // Centre the contents of the cell (includes the button).
+                        cell.setAlignment(Pos.CENTER);
+                        return cell;
+                    }
+                };
+        seedActionTblCol.setCellFactory(seedActionCellFactory);
+        
         seedUrlTableView.setItems(seedUrlObservableList);
         
         seedUrlOptionsComboBox.getItems().clear();
@@ -294,8 +336,44 @@ public class MainWindow extends Application {
                     }
                 };
         // Not required.
-        // latestForecastTblCol.setCellValueFactory(new PropertyValueFactory<>("NotRequired"));
-        latestForecastTblCol.setCellFactory(forecastCellFactory);
+        // forecastTblCol.setCellValueFactory(new PropertyValueFactory<>("NotRequired"));
+        forecastTblCol.setCellFactory(forecastCellFactory);
+        
+        // Custom cell factory is required to add button to table view cell.
+        Callback<TableColumn<Stock, String>, TableCell<Stock, String>> soiActionCellFactory =
+                new Callback<TableColumn<Stock, String>, TableCell<Stock, String>>() {
+                    @Override
+                    public TableCell call(final TableColumn<Stock, String> param) {
+                        final TableCell<Stock, String> cell = new TableCell<Stock, String>() {
+                            final Button btn = new Button("Remove");
+                            
+                            @Override
+                            public void updateItem(String item, boolean empty) {
+                                super.updateItem(item, empty);
+                                
+                                if (empty) {
+                                    setGraphic(null);
+                                    setText(null);
+                                } else {
+                                    btn.setOnAction(event -> {
+                                        Stock stock = getTableView().getItems().get(getIndex());
+                                        LOGGER.debug(stock.getCompany());
+                                        
+                                        SOIRegistry.getInstance().remove(stock);
+                                        soiObservableList.remove(stock);
+                                    });
+                                    setGraphic(btn);
+                                    setText(null);
+                                }
+                            }
+                        };
+                        
+                        // Centre the contents of the cell (includes the button).
+                        cell.setAlignment(Pos.CENTER);
+                        return cell;
+                    }
+                };
+        soiActionTblCol.setCellFactory(soiActionCellFactory);
         
         soiRegistryTableView.setItems(soiObservableList);
         
@@ -490,14 +568,6 @@ public class MainWindow extends Application {
         if (!soiObservableList.contains(stock)) {
             SOIRegistry.getInstance().add(stock);
             soiObservableList.add(stock);
-        }
-    }
-    
-    public void removeSoi() {
-        Stock stock = soiRegistryTableView.getSelectionModel().getSelectedItem();
-        if (stock != null) {
-            SOIRegistry.getInstance().remove(stock);
-            soiObservableList.remove(stock);
         }
     }
     
