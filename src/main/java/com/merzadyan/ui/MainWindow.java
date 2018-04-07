@@ -83,9 +83,6 @@ public class MainWindow extends Application {
     private ComboBox seedUrlOptionsComboBox;
     @FXML
     private TextField seedUrlTextField;
-    @FXML
-    private Button addSeedUrlBtn,
-            removeSeedUrlBtn;
     
     /*
      * SOI Registry tab.
@@ -302,6 +299,7 @@ public class MainWindow extends Application {
             
             startTimer();
             crawlerManager.startNonBlockingCrawl();
+            currentlyCrawling = true;
         } catch (Exception ex) {
             LOGGER.debug(ex);
         }
