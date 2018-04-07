@@ -37,6 +37,14 @@
     -fx-text-fill: -rose-gold;
 }
 
+.image-button {
+    -fx-min-width: 45px !important;
+    -fx-min-height: 45px !important;
+    -fx-border-radius: 50px !important;
+    -fx-background-radius: 50px !important;
+    -fx-background-color: transparent !important;
+}
+
 .tab-pane *.tab-header-area *.tab-header-background {
     -fx-background-color: -dark-blue;
 }

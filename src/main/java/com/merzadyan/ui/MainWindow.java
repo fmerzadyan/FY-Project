@@ -58,6 +58,10 @@ public class MainWindow extends Application {
      * Main tab.
      */
     @FXML
+    private Button startBtn,
+            stopBtn;
+    
+    @FXML
     private TextArea consoleTextArea;
     @FXML
     private Label hhmmssLbl;
@@ -208,6 +212,10 @@ public class MainWindow extends Application {
         /*
          * Main tab.
          */
+        // Disable click-ability of unintended areas around button.
+        startBtn.setPickOnBounds(false);
+        stopBtn.setPickOnBounds(false);
+        
         TextAreaAppender.setTextArea(consoleTextArea);
         consoleTextArea.appendText("Started application.\n");
         
