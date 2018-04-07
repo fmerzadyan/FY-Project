@@ -43,9 +43,8 @@ public class CrawlerManager {
      * IMPORTANT MODE: for testing, debugging and presentation purposes.
      */
     public static class MODE {
-        public static final String TEST_MODE_ONE = "TEST_MODE_ONE";
-        public static final String TEST_MODE_TWO = "TEST_MODE_TWO";
-        public static final String TEST_MODE_THREE = "TEST_MODE_THREE";
+        public static final String TEST_MODE_SIMPLE = "TEST_MODE_SIMPLE";
+        public static final String TEST_MODE_COMPLEX = "TEST_MODE_COMPLEX";
     }
     
     private static final Logger LOGGER = Logger.getLogger(CrawlerManager.class.getName());
@@ -124,14 +123,13 @@ public class CrawlerManager {
         if (test && testMode != null && !testMode.isEmpty()) {
             LOGGER.debug("testMode: " + testMode);
             switch (testMode) {
-                case MODE.TEST_MODE_ONE:
-                    LOGGER.debug("Adding " + SeedUrlRegistry.TEST_MODE_ONE_URL + " as a seed url.");
-                    // IMPORTANT NOTE: http:// is required for the url to be valid.
-                    controller.addSeed(SeedUrlRegistry.TEST_MODE_ONE_URL);
+                case MODE.TEST_MODE_SIMPLE:
+                    LOGGER.debug("Adding " + SeedUrlRegistry.TEST_MODE_SIMPLE_URL + " as a seed url.");
+                    controller.addSeed(SeedUrlRegistry.TEST_MODE_SIMPLE_URL);
                     break;
-                case MODE.TEST_MODE_TWO:
-                    break;
-                case MODE.TEST_MODE_THREE:
+                case MODE.TEST_MODE_COMPLEX:
+                    LOGGER.debug("Adding " + SeedUrlRegistry.TEST_MODE_COMPLEX_URL + " as a seed url.");
+                    controller.addSeed(SeedUrlRegistry.TEST_MODE_COMPLEX_URL);
                     break;
                 default:
                     /*
@@ -316,7 +314,7 @@ public class CrawlerManager {
         CrawlerManager crawlerManager = new CrawlerManager(listener);
         crawlerManager.setNumberOfCrawlers(1);
         crawlerManager.setTest(true);
-        crawlerManager.setTestMode(MODE.TEST_MODE_ONE);
+        crawlerManager.setTestMode(MODE.TEST_MODE_SIMPLE);
         
         try {
             crawlerManager.startNonBlockingCrawl();

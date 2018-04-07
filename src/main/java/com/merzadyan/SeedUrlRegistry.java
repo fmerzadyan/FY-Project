@@ -12,7 +12,9 @@ public class SeedUrlRegistry {
     
     private final TreeSet<SeedUrl> urlSet;
     
-    public static final String TEST_MODE_ONE_URL = "http://merzadyan.com";
+    // IMPORTANT NOTE: http:// is required for the url to be valid.
+    public static final String TEST_MODE_SIMPLE_URL = "http://merzadyan.com";
+    public static final String TEST_MODE_COMPLEX_URL = "http://merzadyan.com/bae-systems-complex/";
     
     private SeedUrlRegistry() {
         urlSet = new TreeSet<>();

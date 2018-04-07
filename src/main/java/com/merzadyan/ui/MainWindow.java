@@ -399,9 +399,8 @@ public class MainWindow extends Application {
         
         testModeComboBox.getItems().clear();
         testModeComboBox.getItems().addAll(
-                CrawlerManager.MODE.TEST_MODE_ONE,
-                CrawlerManager.MODE.TEST_MODE_TWO,
-                CrawlerManager.MODE.TEST_MODE_THREE
+                CrawlerManager.MODE.TEST_MODE_SIMPLE,
+                CrawlerManager.MODE.TEST_MODE_COMPLEX
         );
         
         testSlider.setLabelFormatter(binaryLabelFormat);

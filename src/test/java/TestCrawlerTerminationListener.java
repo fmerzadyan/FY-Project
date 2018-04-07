@@ -18,7 +18,7 @@ public class TestCrawlerTerminationListener {
         CrawlerManager crawlerManager = new CrawlerManager(listener);
         crawlerManager.setNumberOfCrawlers(1);
         crawlerManager.setTest(true);
-        crawlerManager.setTestMode(CrawlerManager.MODE.TEST_MODE_ONE);
+        crawlerManager.setTestMode(CrawlerManager.MODE.TEST_MODE_SIMPLE);
         
         try {
             crawlerManager.startNonBlockingCrawl();
