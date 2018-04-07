@@ -14,6 +14,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -21,6 +22,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -92,7 +94,8 @@ public class MainWindow extends Application {
     @FXML
     private TableColumn<Stock, String> companyTblCol,
             symbolTblCol,
-            stockExchangeTblCol;
+            stockExchangeTblCol,
+            latestForecastTblCol;
     private ObservableList<Stock> soiObservableList;
     
     @FXML
@@ -243,6 +246,42 @@ public class MainWindow extends Application {
         companyTblCol.setCellValueFactory(new PropertyValueFactory<>("company"));
         symbolTblCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
         stockExchangeTblCol.setCellValueFactory(new PropertyValueFactory<>("stockExchange"));
+        
+        // Custom cell factory is required to add button to table view cell.
+        Callback<TableColumn<Stock, String>, TableCell<Stock, String>> forecastCellFactory =
+                new Callback<TableColumn<Stock, String>, TableCell<Stock, String>>() {
+                    @Override
+                    public TableCell call(final TableColumn<Stock, String> param) {
+                        final TableCell<Stock, String> cell = new TableCell<Stock, String>() {
+                            final Button btn = new Button("Forecast");
+                            
+                            @Override
+                            public void updateItem(String item, boolean empty) {
+                                super.updateItem(item, empty);
+                                
+                                if (empty) {
+                                    setGraphic(null);
+                                    setText(null);
+                                } else {
+                                    btn.setOnAction(event -> {
+                                        Stock stock = getTableView().getItems().get(getIndex());
+                                        LOGGER.debug(stock.getCompany());
+                                    });
+                                    setGraphic(btn);
+                                    setText(null);
+                                }
+                            }
+                        };
+                        
+                        // Centre the contents of the cell (includes the button).
+                        cell.setAlignment(Pos.CENTER);
+                        return cell;
+                    }
+                };
+        // Not required.
+        // latestForecastTblCol.setCellValueFactory(new PropertyValueFactory<>("NotRequired"));
+        latestForecastTblCol.setCellFactory(forecastCellFactory);
+        
         soiRegistryTableView.setItems(soiObservableList);
         
         preselectedStockSlider.setLabelFormatter(binaryLabelFormat);
