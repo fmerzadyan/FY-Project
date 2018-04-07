@@ -29,6 +29,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
@@ -253,7 +254,7 @@ public class MainWindow extends Application {
                     @Override
                     public TableCell call(final TableColumn<Stock, String> param) {
                         final TableCell<Stock, String> cell = new TableCell<Stock, String>() {
-                            final Button btn = new Button("Forecast");
+                            final Button btn = new Button("Result");
                             
                             @Override
                             public void updateItem(String item, boolean empty) {
@@ -266,6 +267,20 @@ public class MainWindow extends Application {
                                     btn.setOnAction(event -> {
                                         Stock stock = getTableView().getItems().get(getIndex());
                                         LOGGER.debug(stock.getCompany());
+                                        
+                                        try {
+                                            FXMLLoader loader = new FXMLLoader(getClass().getResource("chart.fxml"));
+                                            
+                                            Stage stage = new Stage();
+                                            stage.setScene(new Scene(loader.load()));
+                                            
+                                            ChartWindow controller = loader.getController();
+                                            controller.initData(stock);
+                                            
+                                            stage.show();
+                                        } catch (Exception e) {
+                                            LOGGER.error(e);
+                                        }
                                     });
                                     setGraphic(btn);
                                     setText(null);

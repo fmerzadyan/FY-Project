@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<TabPane maxHeight = "-Infinity" maxWidth = "-Infinity" minHeight = "-Infinity" minWidth = "-Infinity"
+         prefHeight = "540.0" prefWidth = "814.0" stylesheets = "@main.css" tabClosingPolicy = "UNAVAILABLE"
+         xmlns = "http://javafx.com/javafx/8.0.151" xmlns:fx = "http://javafx.com/fxml/1"
+         fx:controller = "com.merzadyan.ui.ChartWindow">
+    <tabs>
+        <Tab text = "Line Chart">
+            <content>
+                <AnchorPane minHeight = "0.0" minWidth = "0.0" prefHeight = "180.0" prefWidth = "200.0">
+                    <children>
+                        <LineChart fx:id = "lineChart" layoutX = "107.0" layoutY = "14.0" prefHeight = "480.0"
+                                   prefWidth = "814.4" AnchorPane.bottomAnchor = "0.0" AnchorPane.leftAnchor = "0.0"
+                                   AnchorPane.rightAnchor = "0.0" AnchorPane.topAnchor = "0.0">
+                            <xAxis>
+                                <CategoryAxis side = "BOTTOM" />
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis side = "LEFT" />
+                            </yAxis>
+                        </LineChart>
+                    </children>
+                </AnchorPane>
+            </content>
+        </Tab>
+        <Tab text = "Histogram">
+            <content>
+                <AnchorPane minHeight = "0.0" minWidth = "0.0" prefHeight = "180.0" prefWidth = "200.0">
+                    <children>
+                        <BarChart fx:id = "barChat" layoutX = "148.0" layoutY = "60.0" prefHeight = "480.0"
+                                  prefWidth = "814.4" AnchorPane.bottomAnchor = "0.0" AnchorPane.leftAnchor = "0.0"
+                                  AnchorPane.rightAnchor = "0.0" AnchorPane.topAnchor = "0.0">
+                            <xAxis>
+                                <CategoryAxis side = "BOTTOM" />
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis side = "LEFT" />
+                            </yAxis>
+                        </BarChart>
+                    </children>
+                </AnchorPane>
+            </content>
+        </Tab>
+    </tabs>
+</TabPane>
