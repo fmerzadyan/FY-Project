@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -14,9 +15,13 @@ import javafx.stage.Stage;
 public class ChartWindow extends Application {
     @FXML
     private LineChart<String, Number> lineChart;
-    private CategoryAxis xAxis = new CategoryAxis();
-    private NumberAxis yAxis = new NumberAxis();
+    private CategoryAxis lineChartXAxis = new CategoryAxis();
+    private NumberAxis lineChartYAxis = new NumberAxis();
     
+    @FXML
+    private BarChart<Number, Number> barChart;
+    private CategoryAxis barChartXAxis = new CategoryAxis();
+    private NumberAxis barChartYAxis = new NumberAxis();
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -31,10 +36,10 @@ public class ChartWindow extends Application {
     
     void initData(Stock stock) {
         lineChart.setTitle(stock.getCompany());
-    
+        
         // IMPORTANT NOTE: The time measurement unit is undecided - waiting to determine the life-span of a prediction.
-        xAxis.setLabel("Month");
-    
+        lineChartXAxis.setLabel("Month");
+        
         // Define the series.
         XYChart.Series marketValueSeries = new XYChart.Series();
         marketValueSeries.setName("Market Value");
@@ -50,7 +55,7 @@ public class ChartWindow extends Application {
         marketValueSeries.getData().add(new XYChart.Data("Oct", 17));
         marketValueSeries.getData().add(new XYChart.Data("Nov", 29));
         marketValueSeries.getData().add(new XYChart.Data("Dec", 25));
-    
+        
         XYChart.Series sentimentValueSeries = new XYChart.Series();
         sentimentValueSeries.setName("Sentiment Value");
         sentimentValueSeries.getData().add(new XYChart.Data("Jan", 33));
@@ -65,10 +70,26 @@ public class ChartWindow extends Application {
         sentimentValueSeries.getData().add(new XYChart.Data("Oct", 27));
         sentimentValueSeries.getData().add(new XYChart.Data("Nov", 37));
         sentimentValueSeries.getData().add(new XYChart.Data("Dec", 29));
-    
+        
         lineChart.getYAxis().setTickLabelsVisible(false);
         lineChart.getYAxis().setOpacity(0);
         lineChart.getData().addAll(marketValueSeries, sentimentValueSeries);
+        
+        barChart.setTitle(stock.getCompany());
+        barChartXAxis.setLabel("Distribution");
+        barChartYAxis.setLabel("Frequency");
+        barChart.setBarGap(0);
+        barChart.setCategoryGap(0);
+        
+        XYChart.Series series = new XYChart.Series();
+        series.setName("Sentiment Value");
+        
+        series.getData().add(new XYChart.Data<>("Negative", stock.getHistogram()[0]));
+        series.getData().add(new XYChart.Data<>("Somewhat negative", stock.getHistogram()[1]));
+        series.getData().add(new XYChart.Data<>("Neutral", stock.getHistogram()[2]));
+        series.getData().add(new XYChart.Data<>("Somewhat positive", stock.getHistogram()[3]));
+        series.getData().add(new XYChart.Data<>("Positive", stock.getHistogram()[4]));
+        barChart.getData().addAll(series);
     }
     
     

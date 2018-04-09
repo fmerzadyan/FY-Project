@@ -315,7 +315,14 @@ public class MainWindow extends Application {
                                             Stage stage = new Stage();
                                             stage.setScene(new Scene(loader.load()));
                                             
+                                            // TODO: enable persistent store of sentiment scores.
                                             ChartWindow controller = loader.getController();
+                                            for (Stock result : finalStockResultList) {
+                                                if (result.getCompany().trim().toLowerCase().equals(stock.getCompany().trim().toLowerCase())) {
+                                                    stock.setLatestSentimentScore(result.getLatestSentimentScore());
+                                                    stock.setHistogram(result.getHistogram());
+                                                }
+                                            }
                                             controller.initData(stock);
                                             
                                             stage.show();
