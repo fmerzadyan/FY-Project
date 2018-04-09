@@ -4,8 +4,16 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+import edu.stanford.nlp.time.SUTime;
+import edu.stanford.nlp.time.TimeAnnotations;
+import edu.stanford.nlp.time.TimeAnnotator;
+import edu.stanford.nlp.time.TimeExpression;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
@@ -14,6 +22,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 public class SentientAnalyser {
     // org.apache.log4j.Logger.
@@ -22,6 +31,9 @@ public class SentientAnalyser {
     private static final StanfordCoreNLP sentimentPipeline = getSentimentPipeline();
     
     private static final StanfordCoreNLP namedEntityPipeline = getNamedEntityPipeline();
+    
+    private static final AnnotationPipeline suTimePipeline = getSuTimePipeline();
+    private static final Pattern dateFormatRegex = getDateFormatRegex();
     
     private static StanfordCoreNLP getSentimentPipeline() {
         // Disable logs.
@@ -56,6 +68,25 @@ public class SentientAnalyser {
         RedwoodConfiguration.current().clear().apply();
         
         return pipeline;
+    }
+    
+    private static AnnotationPipeline getSuTimePipeline() {
+        Properties properties = new Properties();
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        pipeline.addAnnotator(new TokenizerAnnotator(false));
+        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+        pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        pipeline.addAnnotator(new TimeAnnotator("sutime", properties));
+        return pipeline;
+    }
+    
+    /**
+     * Matches yyyy-mm-dd format.
+     *
+     * @return
+     */
+    private static Pattern getDateFormatRegex() {
+        return Pattern.compile("^2018-(0[1-9]|1[0-2])-(0[0-9]|1[0-9]|2[0-9]|3[0-1])?$");
     }
     
     /**
@@ -159,5 +190,35 @@ public class SentientAnalyser {
         
         // Defaults to returning null.
         return null;
+    }
+    
+    /**
+     * @param text
+     * @return date in the format yyyy-mm-dd. Null in the case of errors.
+     */
+    public static String findSUTime(String text) {
+        // See https://nlp.stanford.edu/software/CRF-NER.html for more info.
+        if (text == null || text.isEmpty()) {
+            return null;
+        }
+        
+        String extractedDate = null;
+        
+        Annotation annotation = new Annotation(text);
+        suTimePipeline.annotate(annotation);
+        List<CoreMap> timexAnnotations = annotation.get(TimeAnnotations.TimexAnnotations.class);
+        for (CoreMap coreMap : timexAnnotations) {
+            SUTime.Temporal temporal = coreMap.get(TimeExpression.Annotation.class).getTemporal();
+            LOGGER.debug("date: " + temporal);
+            
+            extractedDate = temporal.toString();
+            if (dateFormatRegex.matcher(extractedDate).matches()) {
+                // By breaking: gets the first date in the text.
+                // IMPORTANT NOTE: (Assumes this is the date that we want).
+                break;
+            }
+        }
+        
+        return extractedDate;
     }
 }

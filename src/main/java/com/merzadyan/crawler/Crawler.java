@@ -123,8 +123,9 @@ public class Crawler extends WebCrawler {
         if (referringPage.getParseData() instanceof HtmlParseData) {
             HtmlParseData htmlParseData = (HtmlParseData) referringPage.getParseData();
             Document document = Jsoup.parseBodyFragment(htmlParseData.getHtml());
-            
-            boolean firstMatch = trie != null && trie.firstMatch(document.body().text()) != null;
+            String contentText = document.body().text();
+    
+            boolean firstMatch = trie != null && trie.firstMatch(contentText) != null;
             LOGGER.debug("firstMatch: " + firstMatch);
             
             // Using #firstMatch for optimisation purposes - as long as there is
@@ -157,6 +158,20 @@ public class Crawler extends WebCrawler {
             LOGGER.debug("URL: " + url);
             LOGGER.debug("Number of outgoing links: " + links.size());
             LOGGER.debug("Text length: " + contentText.length());
+    
+            String extractedDate = SentientAnalyser.findSUTime(contentText);
+    
+            LOGGER.debug("extractedDate: " + extractedDate);
+    
+            // TODO: add option to select start and end date.
+            // extracted case must between the specified start date and end date.
+            if (extractedDate == null || extractedDate.compareToIgnoreCase("2018-03-01") <= 0 ||
+                    extractedDate.compareToIgnoreCase("2018-04-01") >= 0) {
+                LOGGER.debug("Not in-between");
+                return;
+            }
+    
+            LOGGER.debug("in-between");
             
             // #identifyOrganisationEntity returns a non-null result if the title contains a SOI.
             String company = null;
