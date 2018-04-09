@@ -132,3 +132,6 @@ src/main/java/com/merzadyan/TODO\.md
 src/main/java/com/merzadyan/Test\.java
 
 \.idea/codeStyles/
+
+# Ignore serialised files.
+*.ser

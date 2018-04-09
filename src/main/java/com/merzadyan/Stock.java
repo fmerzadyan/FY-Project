@@ -1,8 +1,9 @@
 package com.merzadyan;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
-public class Stock implements Comparator, Comparable {
+public class Stock implements Comparator, Comparable, Serializable {
     private String company;
     private String symbol;
     private String stockExchange;

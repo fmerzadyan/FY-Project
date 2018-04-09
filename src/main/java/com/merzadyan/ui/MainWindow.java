@@ -1,6 +1,7 @@
 package com.merzadyan.ui;
 
 import com.merzadyan.Common;
+import com.merzadyan.History;
 import com.merzadyan.SOIRegistry;
 import com.merzadyan.SeedUrl;
 import com.merzadyan.SeedUrlRegistry;
@@ -33,6 +34,11 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +58,8 @@ public class MainWindow extends Application {
     private CrawlerManager crawlerManager;
     private ResultsCallback resultsCallback;
     private CountDownLatch countDownLatch;
-    private final ArrayList<Stock> finalStockResultList = new ArrayList<>();
+    private ArrayList<Stock> finalStockResultList;
+    private static final String SERIALISED_FILE_PATH = "src\\main\\resources\\History.ser";
     
     /**
      * Indicates the current state of the crawlers. True if crawling is currently being performed.
@@ -164,6 +171,18 @@ public class MainWindow extends Application {
         // Disable resizing ability of the window.
         primaryStage.setResizable(false);
         primaryStage.show();
+        
+        // primaryStage.setAlwaysOnTop(true);
+        primaryStage.setOnCloseRequest((event -> {
+            // Serialise the data in the event that the window was closed.
+            if (finalStockResultList != null && finalStockResultList.size() > 0) {
+                serialise();
+            }
+            
+            // Force stop all threads.
+            Platform.exit();
+            System.exit(0);
+        }));
     }
     
     /**
@@ -222,6 +241,9 @@ public class MainWindow extends Application {
         
         resultsCallback = new ResultsCallback();
         crawlerManager = new CrawlerManager(resultsCallback);
+        finalStockResultList = new ArrayList<>();
+        // Restore last saved state.
+        deserialise();
         
         /*
          * Seed URLs tab.
@@ -317,12 +339,23 @@ public class MainWindow extends Application {
                                             
                                             // TODO: enable persistent store of sentiment scores.
                                             ChartWindow controller = loader.getController();
+                                            
                                             for (Stock result : finalStockResultList) {
-                                                if (result.getCompany().trim().toLowerCase().equals(stock.getCompany().trim().toLowerCase())) {
+                                                if (result.getCompany().trim().toLowerCase().equals(stock.getCompany()
+                                                        .trim().toLowerCase())) {
+                                                    // Sync the data.
+                                                    result.setSymbol(stock.getSymbol());
+                                                    result.setStockExchange(stock.getStockExchange());
                                                     stock.setLatestSentimentScore(result.getLatestSentimentScore());
                                                     stock.setHistogram(result.getHistogram());
                                                 }
                                             }
+                                            
+                                            // Serialise the data.
+                                            if (finalStockResultList != null && finalStockResultList.size() > 0) {
+                                                serialise();
+                                            }
+                                            
                                             controller.initData(stock);
                                             
                                             stage.show();
@@ -679,4 +712,86 @@ public class MainWindow extends Application {
         }
     }
     
+    public void deserialise() {
+        LOGGER.debug("deserialise.");
+        
+        if (!Common.isFile(SERIALISED_FILE_PATH)) {
+            return;
+        }
+        
+        if (Common.isEmptyFile(SERIALISED_FILE_PATH)) {
+            return;
+        }
+        
+        if (finalStockResultList == null) {
+            finalStockResultList = new ArrayList<>();
+        }
+        
+        FileInputStream fileInputStream = null;
+        ObjectInputStream objectInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(SERIALISED_FILE_PATH);
+            objectInputStream = new ObjectInputStream(fileInputStream);
+            History history = (History) objectInputStream.readObject();
+            if (history != null && history.getLastSaved().size() > 0) {
+                finalStockResultList = history.getLastSaved();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            if (objectInputStream != null) {
+                try {
+                    objectInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    public void serialise() {
+        LOGGER.debug("serialise.");
+        
+        // No need to serialise if the finalStockResultList is null or empty.
+        if (finalStockResultList == null || finalStockResultList.size() == 0) {
+            return;
+        }
+        
+        FileOutputStream fileOutputStream = null;
+        ObjectOutputStream objectOutputStream = null;
+        
+        try {
+            fileOutputStream = new FileOutputStream(SERIALISED_FILE_PATH);
+            objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            History history = new History();
+            history.setLastSaved(finalStockResultList);
+            objectOutputStream.writeObject(history);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            if (objectOutputStream != null) {
+                try {
+                    objectOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }
