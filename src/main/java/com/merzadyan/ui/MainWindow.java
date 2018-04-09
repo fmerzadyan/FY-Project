@@ -35,8 +35,10 @@ import org.apache.log4j.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -49,6 +51,8 @@ public class MainWindow extends Application {
     
     private CrawlerManager crawlerManager;
     private ResultsCallback resultsCallback;
+    private CountDownLatch countDownLatch;
+    private final ArrayList<Stock> finalStockResultList = new ArrayList<>();
     
     /**
      * Indicates the current state of the crawlers. True if crawling is currently being performed.
@@ -131,12 +135,9 @@ public class MainWindow extends Application {
     private class ResultsCallback implements CrawlerTerminationListener {
         @Override
         public void onTermination(HashMap<Stock, ArrayList<Integer>> soiScoreMap) {
-            LOGGER.debug("#onTermination");
+            LOGGER.debug("#onTermination.");
             
-            stopTimer();
-            
-            currentlyCrawling = false;
-            startBtn.setDisable(false);
+            countDownLatch.countDown();
             
             if (soiScoreMap == null) {
                 return;
@@ -144,11 +145,9 @@ public class MainWindow extends Application {
             
             try {
                 soiScoreMap.forEach((stock, scores) -> {
-                    String out = ("Stock: " + stock.getCompany()) +
-                            " Symbol: " + stock.getSymbol() +
-                            " Stock Exchange: " + stock.getStockExchange() +
-                            " Sentiment Score: " + stock.getLatestSentimentScore();
-                    LOGGER.debug("result: " + out);
+                    synchronized (finalStockResultList) {
+                        finalStockResultList.add(stock);
+                    }
                 });
             } catch (Exception e) {
                 LOGGER.fatal(e);
@@ -427,6 +426,50 @@ public class MainWindow extends Application {
                 LOGGER.fatal("CrawlerManager: null");
                 return;
             }
+            
+            countDownLatch = new CountDownLatch((int) numberOfCrawlersSlider.getValue());
+            new Thread(() -> {
+                try {
+                    countDownLatch.await();
+                    
+                    stopTimer();
+                    currentlyCrawling = false;
+                    startBtn.setDisable(false);
+                    
+                    for (int i = 0; i < finalStockResultList.size(); i++) {
+                        int nextIndex = i + 1;
+                        if (nextIndex >= finalStockResultList.size()) {
+                            break;
+                        }
+                        
+                        Stock current = finalStockResultList.get(i),
+                                next = finalStockResultList.get(nextIndex);
+                        if (current.getCompany().trim().toLowerCase().equals(next.getCompany().trim().toLowerCase())) {
+                            int length = current.getHistogram().length;
+                            int[] histogram = new int[length];
+                            
+                            // Sum elements in histograms.
+                            for (int j = 0; j < length; j++) {
+                                histogram[j] = current.getHistogram()[j] + next.getHistogram()[j];
+                            }
+                            
+                            next.setHistogram(histogram);
+                            finalStockResultList.remove(current);
+                        }
+                    }
+                    
+                    for (Stock stock : finalStockResultList) {
+                        String out = ("Stock: " + stock.getCompany()) +
+                                " Symbol: " + stock.getSymbol() +
+                                " Stock Exchange: " + stock.getStockExchange() +
+                                " Sentiment Score: " + stock.getLatestSentimentScore() +
+                                " Histogram: " + Arrays.toString(stock.getHistogram());
+                        LOGGER.debug("result: " + out);
+                    }
+                } catch (Exception e) {
+                    LOGGER.fatal(e);
+                }
+            }).start();
             
             startTimer();
             crawlerManager.startNonBlockingCrawl();

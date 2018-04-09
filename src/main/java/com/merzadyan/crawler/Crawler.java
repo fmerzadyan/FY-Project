@@ -189,6 +189,7 @@ public class Crawler extends WebCrawler {
             
             Stock stock = new Stock();
             stock.setCompany(company);
+            // TODO: add symbol and stock exchange.
             
             int score = -1;
             try {
@@ -260,6 +261,7 @@ public class Crawler extends WebCrawler {
                     " highestFrequency: " + highestFrequency + " indexOfHighestFrequency: " + indexOfHighestFrequency);
             // Mark stock with the latest sentiment score.
             stock.setLatestSentimentScore(indexOfHighestFrequency);
+            stock.setHistogram(histogram);
         });
         
         publish(soiScoreMap);

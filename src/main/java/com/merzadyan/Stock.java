@@ -11,6 +11,10 @@ public class Stock implements Comparator, Comparable {
      * Calculated by extracting the mode value of sentiment scores for this stock.
      */
     private int latestSentimentScore;
+    /**
+     * Default values is {-1, -1, -1, -1, -1} indicating it has been updated with sentiment scores yet.
+     */
+    private int[] histogram;
     
     public Stock() {
     
@@ -21,6 +25,7 @@ public class Stock implements Comparator, Comparable {
         this.symbol = symbol;
         this.stockExchange = stockExchange;
         latestSentimentScore = -1;
+        histogram = new int[]{-1, -1, -1, -1, -1};
     }
     
     @Override
@@ -108,5 +113,13 @@ public class Stock implements Comparator, Comparable {
     
     public int getLatestSentimentScore() {
         return latestSentimentScore;
+    }
+    
+    public void setHistogram(int[] histogram) {
+        this.histogram = histogram;
+    }
+    
+    public int[] getHistogram() {
+        return histogram;
     }
 }
