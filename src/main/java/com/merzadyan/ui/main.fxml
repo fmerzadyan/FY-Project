@@ -446,6 +446,16 @@
                     <children>
                         <VBox prefHeight = "200.0" prefWidth = "100.0">
                             <children>
+                                <Label text = "Process Interval" />
+                                <ComboBox fx:id = "processIntervalComboBox" maxWidth = "1.7976931348623157E308"
+                                          minWidth = "200.0" prefWidth = "300.0" />
+                            </children>
+                            <padding>
+                                <Insets bottom = "10.0" left = "10.0" right = "10.0" top = "10.0" />
+                            </padding>
+                        </VBox>
+                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "1">
+                            <children>
                                 <Label text = "User Agent Name:" />
                                 <TextField fx:id = "userAgentNameTextField" />
                             </children>
@@ -453,7 +463,7 @@
                                 <Insets bottom = "10.0" left = "10.0" right = "10.0" top = "10.0" />
                             </padding>
                         </VBox>
-                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "1">
+                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "2">
                             <children>
                                 <Label text = "Data Dump:" />
                                 <TextField fx:id = "dataDumpTextField" />
@@ -462,7 +472,7 @@
                                 <Insets bottom = "10.0" left = "10.0" right = "10.0" top = "10.0" />
                             </padding>
                         </VBox>
-                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "2">
+                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "3">
                             <children>
                                 <Label text = "Number of Crawlers:" />
                                 <Slider fx:id = "numberOfCrawlersSlider" blockIncrement = "1.0" majorTickUnit = "1.0"
@@ -473,7 +483,7 @@
                                 <Insets bottom = "10.0" left = "10.0" right = "10.0" top = "10.0" />
                             </padding>
                         </VBox>
-                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "3">
+                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "4">
                             <children>
                                 <Label text = "Max Depth of Crawling:" />
                                 <Slider fx:id = "maxDepthOfCrawlingSlider" blockIncrement = "25.0"
@@ -484,7 +494,7 @@
                                 <Insets bottom = "10.0" left = "10.0" right = "10.0" top = "10.0" />
                             </padding>
                         </VBox>
-                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "4">
+                        <VBox prefHeight = "200.0" prefWidth = "100.0" GridPane.rowIndex = "5">
                             <children>
                                 <Label text = "Politeness Delay (ms):" />
                                 <Slider fx:id = "politenessDelaySlider" blockIncrement = "50.0" majorTickUnit = "100.0"

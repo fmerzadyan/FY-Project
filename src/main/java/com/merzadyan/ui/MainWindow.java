@@ -1,6 +1,7 @@
 package com.merzadyan.ui;
 
 import com.merzadyan.Common;
+import com.merzadyan.DateCategoriser;
 import com.merzadyan.History;
 import com.merzadyan.SOIRegistry;
 import com.merzadyan.SeedUrl;
@@ -125,6 +126,9 @@ public class MainWindow extends Application {
     /*
      * Config tab.
      */
+    @FXML
+    private ComboBox processIntervalComboBox;
+    
     @FXML
     private TextField userAgentNameTextField,
             dataDumpTextField;
@@ -431,6 +435,11 @@ public class MainWindow extends Application {
         /*
          * Config tab.
          */
+        processIntervalComboBox.getItems().clear();
+        processIntervalComboBox.getItems().addAll(
+                (String[]) new DateCategoriser(null).extractIntervals()
+        );
+        
         userAgentNameTextField.setText(crawlerManager.getUserAgentString());
         dataDumpTextField.setText(crawlerManager.getCrawlStorageFolder());
         
