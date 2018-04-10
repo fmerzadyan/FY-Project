@@ -2,6 +2,7 @@ package com.merzadyan;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Comparator;
 
 public class Stock implements Comparator, Comparable, Serializable {
@@ -57,6 +58,7 @@ public class Stock implements Comparator, Comparable, Serializable {
         
         Stock comparee = (Stock) object;
         return latestSentimentScore == comparee.latestSentimentScore &&
+                Arrays.equals(histogram, comparee.histogram) &&
                 (company == null ? comparee.company == null : company.equals(comparee.company)) &&
                 (symbol == null ? comparee.symbol == null : symbol.equals(comparee.symbol)) &&
                 (stockExchange == null ? comparee.stockExchange == null : stockExchange.equals(comparee.stockExchange));
@@ -69,6 +71,9 @@ public class Stock implements Comparator, Comparable, Serializable {
         int result = 23;
         
         result = 37 * result + latestSentimentScore;
+        for (int i = 0; i < histogram.length; i++) {
+            result = 37 * result + histogram[i];
+        }
         result = 37 * result + (company == null ? 0 : company.hashCode());
         result = 37 * result + (symbol == null ? 0 : symbol.hashCode());
         result = 37 * result + (stockExchange == null ? 0 : stockExchange.hashCode());
