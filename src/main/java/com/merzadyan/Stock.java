@@ -1,6 +1,7 @@
 package com.merzadyan;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Comparator;
 
 public class Stock implements Comparator, Comparable, Serializable {
@@ -16,6 +17,9 @@ public class Stock implements Comparator, Comparable, Serializable {
      * Default values is {-1, -1, -1, -1, -1} indicating it has been updated with sentiment scores yet.
      */
     private int[] histogram;
+    
+    private LocalDate startDate,
+            endDate;
     
     public Stock() {
     
@@ -122,5 +126,21 @@ public class Stock implements Comparator, Comparable, Serializable {
     
     public int[] getHistogram() {
         return histogram;
+    }
+    
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+    
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+    
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+    
+    public LocalDate getEndDate() {
+        return endDate;
     }
 }

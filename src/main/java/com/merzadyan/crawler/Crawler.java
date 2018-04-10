@@ -1,5 +1,6 @@
 package com.merzadyan.crawler;
 
+import com.merzadyan.DateCategoriser;
 import com.merzadyan.SOIRegistry;
 import com.merzadyan.SentientAnalyser;
 import com.merzadyan.Stock;
@@ -13,6 +14,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +32,8 @@ public class Crawler extends WebCrawler {
     private Trie trie;
     
     private HashMap<Stock, ArrayList<Integer>> soiScoreMap;
+    
+    private DateCategoriser dateCategoriser;
     
     private CrawlerTerminationListener terminationListener;
     
@@ -124,7 +128,7 @@ public class Crawler extends WebCrawler {
             HtmlParseData htmlParseData = (HtmlParseData) referringPage.getParseData();
             Document document = Jsoup.parseBodyFragment(htmlParseData.getHtml());
             String contentText = document.body().text();
-    
+            
             boolean firstMatch = trie != null && trie.firstMatch(contentText) != null;
             LOGGER.debug("firstMatch: " + firstMatch);
             
@@ -158,19 +162,20 @@ public class Crawler extends WebCrawler {
             LOGGER.debug("URL: " + url);
             LOGGER.debug("Number of outgoing links: " + links.size());
             LOGGER.debug("Text length: " + contentText.length());
-    
+            
             String extractedDate = SentientAnalyser.findSUTime(contentText);
-    
             LOGGER.debug("extractedDate: " + extractedDate);
-    
+            
+            LocalDate date = LocalDate.parse(extractedDate),
+                    startDate = LocalDate.parse("2018-03-01"),
+                    endDate = LocalDate.parse("2018-03-08");
+            
             // TODO: add option to select start and end date.
-            // extracted case must between the specified start date and end date.
-            if (extractedDate == null || extractedDate.compareToIgnoreCase("2018-03-01") <= 0 ||
-                    extractedDate.compareToIgnoreCase("2018-04-01") >= 0) {
+            if (date.isBefore(startDate) || date.isAfter(endDate)) {
                 LOGGER.debug("Not in-between");
                 return;
             }
-    
+            
             LOGGER.debug("in-between");
             
             // #identifyOrganisationEntity returns a non-null result if the title contains a SOI.
@@ -189,7 +194,8 @@ public class Crawler extends WebCrawler {
             
             Stock stock = new Stock();
             stock.setCompany(company);
-            // TODO: add symbol and stock exchange.
+            stock.setStartDate(startDate);
+            stock.setEndDate(endDate);
             
             int score = -1;
             try {

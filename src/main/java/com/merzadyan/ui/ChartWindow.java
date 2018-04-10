@@ -1,5 +1,6 @@
 package com.merzadyan.ui;
 
+import com.drew.lang.annotations.NotNull;
 import com.merzadyan.Stock;
 import javafx.application.Application;
 import javafx.fxml.FXML;
@@ -11,8 +12,13 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
+import org.apache.log4j.Logger;
+
+import java.time.LocalDate;
 
 public class ChartWindow extends Application {
+    private static final Logger LOGGER = Logger.getLogger(ChartWindow.class.getName());
+    
     @FXML
     private LineChart<String, Number> lineChart;
     private CategoryAxis lineChartXAxis = new CategoryAxis();
@@ -34,46 +40,32 @@ public class ChartWindow extends Application {
         primaryStage.show();
     }
     
-    void initData(Stock stock) {
+    @FXML
+    void initData(@NotNull Stock stock) {
+        if (lineChart == null) {
+            LOGGER.debug("lineChart: null");
+            lineChart = new LineChart<>(lineChartXAxis, lineChartYAxis);
+        }
+        
         lineChart.setTitle(stock.getCompany());
         
         // IMPORTANT NOTE: The time measurement unit is undecided - waiting to determine the life-span of a prediction.
-        lineChartXAxis.setLabel("Month");
+        lineChartXAxis.setLabel("Date");
         
         // Define the series.
-        XYChart.Series marketValueSeries = new XYChart.Series();
-        marketValueSeries.setName("Market Value");
-        marketValueSeries.getData().add(new XYChart.Data("Jan", 23));
-        marketValueSeries.getData().add(new XYChart.Data("Feb", 14));
-        marketValueSeries.getData().add(new XYChart.Data("Mar", 15));
-        marketValueSeries.getData().add(new XYChart.Data("Apr", 24));
-        marketValueSeries.getData().add(new XYChart.Data("May", 34));
-        marketValueSeries.getData().add(new XYChart.Data("Jun", 36));
-        marketValueSeries.getData().add(new XYChart.Data("Jul", 22));
-        marketValueSeries.getData().add(new XYChart.Data("Aug", 45));
-        marketValueSeries.getData().add(new XYChart.Data("Sep", 43));
-        marketValueSeries.getData().add(new XYChart.Data("Oct", 17));
-        marketValueSeries.getData().add(new XYChart.Data("Nov", 29));
-        marketValueSeries.getData().add(new XYChart.Data("Dec", 25));
-        
+        // TODO: with each crawl for date period, add the data to this chart.
+        // TODO: maybe look into doing a trend line using historic values?
         XYChart.Series sentimentValueSeries = new XYChart.Series();
         sentimentValueSeries.setName("Sentiment Value");
-        sentimentValueSeries.getData().add(new XYChart.Data("Jan", 33));
-        sentimentValueSeries.getData().add(new XYChart.Data("Feb", 34));
-        sentimentValueSeries.getData().add(new XYChart.Data("Mar", 25));
-        sentimentValueSeries.getData().add(new XYChart.Data("Apr", 44));
-        sentimentValueSeries.getData().add(new XYChart.Data("May", 39));
-        sentimentValueSeries.getData().add(new XYChart.Data("Jun", 16));
-        sentimentValueSeries.getData().add(new XYChart.Data("Jul", 55));
-        sentimentValueSeries.getData().add(new XYChart.Data("Aug", 54));
-        sentimentValueSeries.getData().add(new XYChart.Data("Sep", 48));
-        sentimentValueSeries.getData().add(new XYChart.Data("Oct", 27));
-        sentimentValueSeries.getData().add(new XYChart.Data("Nov", 37));
-        sentimentValueSeries.getData().add(new XYChart.Data("Dec", 29));
+        LocalDate sld = stock.getStartDate(),
+                eld = stock.getEndDate();
+        String s = sld.getDayOfMonth() + "-" + sld.getMonthValue() + "-" + sld.getYear(),
+                e = eld.getDayOfMonth() + "-" + eld.getMonthValue() + "-" + eld.getYear(),
+                interval = s.concat(" to " + e);
         
-        lineChart.getYAxis().setTickLabelsVisible(false);
-        lineChart.getYAxis().setOpacity(0);
-        lineChart.getData().addAll(marketValueSeries, sentimentValueSeries);
+        sentimentValueSeries.getData().add(new XYChart.Data(interval, stock.getLatestSentimentScore()));
+        
+        lineChart.getData().add(sentimentValueSeries);
         
         barChart.setTitle(stock.getCompany());
         barChartXAxis.setLabel("Distribution");
@@ -95,6 +87,14 @@ public class ChartWindow extends Application {
     
     @FXML
     public void initialize() {
-    
+        // Stock s = new Stock();
+        // s.setCompany("Bae Systems");
+        // s.setSymbol("BA.");
+        // s.setStockExchange("LSE");
+        // s.setLatestSentimentScore(4);
+        // s.setHistogram(new int[]{0, 4, 0, 0, 0});
+        // s.setStartDate(LocalDate.parse("2018-03-01"));
+        // s.setEndDate(LocalDate.parse("2018-03-08"));
+        // initData(s);
     }
 }

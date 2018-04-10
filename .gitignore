@@ -135,3 +135,5 @@ src/main/java/com/merzadyan/Test\.java
 
 # Ignore serialised files.
 *.ser
+
+\.idea/inspectionProfiles/

@@ -348,6 +348,8 @@ public class MainWindow extends Application {
                                                     result.setStockExchange(stock.getStockExchange());
                                                     stock.setLatestSentimentScore(result.getLatestSentimentScore());
                                                     stock.setHistogram(result.getHistogram());
+                                                    stock.setStartDate(result.getStartDate());
+                                                    stock.setEndDate(result.getEndDate());
                                                 }
                                             }
                                             
@@ -503,7 +505,9 @@ public class MainWindow extends Application {
                                 " Symbol: " + stock.getSymbol() +
                                 " Stock Exchange: " + stock.getStockExchange() +
                                 " Sentiment Score: " + stock.getLatestSentimentScore() +
-                                " Histogram: " + Arrays.toString(stock.getHistogram());
+                                " Histogram: " + Arrays.toString(stock.getHistogram()) +
+                                " Start Date: " + stock.getStartDate() +
+                                " End Date: " + stock.getEndDate();
                         LOGGER.debug("result: " + out);
                     }
                 } catch (Exception e) {
@@ -733,17 +737,17 @@ public class MainWindow extends Application {
             fileInputStream = new FileInputStream(SERIALISED_FILE_PATH);
             objectInputStream = new ObjectInputStream(fileInputStream);
             History history = (History) objectInputStream.readObject();
-            if (history != null && history.getLastSaved().size() > 0) {
+            if (history != null && history.getLastSaved() != null && history.getLastSaved().size() > 0) {
                 finalStockResultList = history.getLastSaved();
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            LOGGER.error(e);
         } finally {
             if (fileInputStream != null) {
                 try {
                     fileInputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error(e);
                 }
             }
             
@@ -751,7 +755,7 @@ public class MainWindow extends Application {
                 try {
                     objectInputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error(e);
                 }
             }
         }
@@ -761,7 +765,7 @@ public class MainWindow extends Application {
         LOGGER.debug("serialise.");
         
         // No need to serialise if the finalStockResultList is null or empty.
-        if (finalStockResultList == null || finalStockResultList.size() == 0) {
+        if (finalStockResultList == null || finalStockResultList == null || finalStockResultList.size() == 0) {
             return;
         }
         
@@ -775,13 +779,13 @@ public class MainWindow extends Application {
             history.setLastSaved(finalStockResultList);
             objectOutputStream.writeObject(history);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e);
         } finally {
             if (fileOutputStream != null) {
                 try {
                     fileOutputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error(e);
                 }
             }
             
@@ -789,7 +793,7 @@ public class MainWindow extends Application {
                 try {
                     objectOutputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error(e);
                 }
             }
         }
