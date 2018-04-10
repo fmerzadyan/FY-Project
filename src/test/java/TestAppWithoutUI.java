@@ -41,6 +41,7 @@ public class TestAppWithoutUI {
             }
         }));
         
+        cm.setInterval("2018-03-08 to 2018-03-15");
         cm.setTest(true);
         cm.setTestMode(CrawlerManager.MODE.TEST_MODE_COMPLEX);
         cm.setNumberOfCrawlers(maxCrawlers);

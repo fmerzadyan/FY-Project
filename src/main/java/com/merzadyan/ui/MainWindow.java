@@ -194,6 +194,9 @@ public class MainWindow extends Application {
      */
     @FXML
     public void initialize() {
+        // Ensure default configs on initialisation.
+        resetConfigs();
+        
         // Use on, off values instead of 0, 1 in sliders.
         StringConverter<Double> binaryLabelFormat = (new StringConverter<Double>() {
             @Override
@@ -437,7 +440,7 @@ public class MainWindow extends Application {
          */
         processIntervalComboBox.getItems().clear();
         processIntervalComboBox.getItems().addAll(
-                (String[]) new DateCategoriser(null).extractIntervals()
+                new DateCategoriser(null).extractIntervals()
         );
         
         userAgentNameTextField.setText(crawlerManager.getUserAgentString());
@@ -572,6 +575,9 @@ public class MainWindow extends Application {
     }
     
     public void saveConfigs() {
+        String interval = (String) processIntervalComboBox.getValue();
+        crawlerManager.setInterval(interval);
+        
         // Guard against null strings.
         String userAgentName = userAgentNameTextField.getText().trim();
         String dataDump = userAgentNameTextField.getText().trim();
@@ -604,6 +610,7 @@ public class MainWindow extends Application {
      * Resets the UI controls in the configs tab.
      */
     public void resetConfigs() {
+        processIntervalComboBox.setValue(CrawlerManager.DEFAULT.DEFAULT_INTERVAL);
         userAgentNameTextField.setText(CrawlerManager.DEFAULT.DEFAULT_USER_AGENT_STRING);
         dataDumpTextField.setText(CrawlerManager.DEFAULT.DEFAULT_CRAWL_STORAGE_FOLDER);
         numberOfCrawlersSlider.setValue(CrawlerManager.DEFAULT.DEFAULT_NUMBER_OF_CRAWLERS);

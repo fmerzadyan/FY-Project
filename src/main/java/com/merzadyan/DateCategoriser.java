@@ -10,11 +10,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DateCategoriser {
-    private static final Logger l = Logger.getLogger(DateCategoriser.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DateCategoriser.class.getName());
     
     private static final LocalDate DEFAULT_START_DATE = LocalDate.parse("2018-03-01");
     private LocalDate startDate;
     private List<LocalDate> dates;
+    
+    public static final String INTERVAL_DELIMITER = "to";
     
     public class Data {
         public int nthWeek;
@@ -43,8 +45,6 @@ public class DateCategoriser {
         dates = Stream.iterate(this.startDate, date -> date.plusWeeks(1))
                 .limit(ChronoUnit.WEEKS.between(this.startDate, endDate))
                 .collect(Collectors.toList());
-        l.debug(dates.size());
-        l.debug(dates);
     }
     
     public Data nthDetails(LocalDate extractedDate) {
@@ -67,7 +67,7 @@ public class DateCategoriser {
             }
         }
         
-        l.debug("startOfCalendar: " + startDate + " nthWeek: " + nthWeek + " startDateOfWeek: " + startDateOfWeek +
+        LOGGER.debug("startOfCalendar: " + startDate + " nthWeek: " + nthWeek + " startDateOfWeek: " + startDateOfWeek +
                 " endDateOfWeek: " + endDateOfWeek);
         return new Data(nthWeek, startDate, startDateOfWeek, endDateOfWeek);
     }
@@ -84,7 +84,7 @@ public class DateCategoriser {
                 break;
             }
             
-            intervals[i] = dates.get(i) + " to " + dates.get(i + 1);
+            intervals[i] = dates.get(i) + " " +  INTERVAL_DELIMITER + " " + dates.get(i + 1);
         }
         return intervals;
     }

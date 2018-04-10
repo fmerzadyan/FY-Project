@@ -209,7 +209,6 @@ public class SentientAnalyser {
         List<CoreMap> timexAnnotations = annotation.get(TimeAnnotations.TimexAnnotations.class);
         for (CoreMap coreMap : timexAnnotations) {
             SUTime.Temporal temporal = coreMap.get(TimeExpression.Annotation.class).getTemporal();
-            LOGGER.debug("date: " + temporal);
             
             extractedDate = temporal.toString();
             if (dateFormatRegex.matcher(extractedDate).matches()) {

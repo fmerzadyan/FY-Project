@@ -1,6 +1,5 @@
 package com.merzadyan.crawler;
 
-import com.merzadyan.DateCategoriser;
 import com.merzadyan.SOIRegistry;
 import com.merzadyan.SentientAnalyser;
 import com.merzadyan.Stock;
@@ -15,6 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,7 +33,8 @@ public class Crawler extends WebCrawler {
     
     private HashMap<Stock, ArrayList<Integer>> soiScoreMap;
     
-    private DateCategoriser dateCategoriser;
+    private LocalDate startDate,
+            endDate;
     
     private CrawlerTerminationListener terminationListener;
     
@@ -42,7 +43,13 @@ public class Crawler extends WebCrawler {
      */
     private static final Pattern FILTERS = constructPattern();
     
-    Crawler(CrawlerTerminationListener terminationListener) {
+    Crawler(CrawlerTerminationListener terminationListener, LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            LOGGER.fatal("Start date and/or end date is not specified.");
+            return;
+        }
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.terminationListener = terminationListener;
         linksVisited = 0;
         soiScoreMap = new HashMap<>();
@@ -78,7 +85,7 @@ public class Crawler extends WebCrawler {
     private void constructTrie() {
         SOIRegistry soiRegistry = SOIRegistry.getInstance();
         if (soiRegistry == null) {
-            LOGGER.debug("SOIRegistry is null.");
+            LOGGER.debug("SOIRegistry: null.");
             return;
         }
         
@@ -118,8 +125,8 @@ public class Crawler extends WebCrawler {
         boolean matchesFilter = FILTERS.matcher(href).matches();
         
         // If the href contains one of the file extensions (to not crawl) then do not visit that page.
-        LOGGER.debug("matchesFilter: " + matchesFilter);
         if (matchesFilter) {
+            LOGGER.debug("Not visiting: " + url.getURL() + " as matchesFilter: true.");
             return false;
         }
         
@@ -128,17 +135,18 @@ public class Crawler extends WebCrawler {
             HtmlParseData htmlParseData = (HtmlParseData) referringPage.getParseData();
             Document document = Jsoup.parseBodyFragment(htmlParseData.getHtml());
             String contentText = document.body().text();
-            
             boolean firstMatch = trie != null && trie.firstMatch(contentText) != null;
-            LOGGER.debug("firstMatch: " + firstMatch);
-            
             // Using #firstMatch for optimisation purposes - as long as there is
             // at least one mention of a SOI then it is unnecessary to process further.
+            if (!firstMatch) {
+                LOGGER.debug("Not visiting: " + url.getURL() + " as page does not have a reference to a company listed " +
+                        "in the trie.");
+            }
             return firstMatch;
         }
         
-        LOGGER.debug("Returning false.");
-        // Defaults to false since either links visited < 1 or referring page is not instance of HtmlParseData.
+        LOGGER.debug("Not visiting: " + url.getURL() + " as referring page is not an instance of HtmlParseData.");
+        // Defaults to false as referring page is not an instance of HtmlParseData.
         return false;
     }
     
@@ -164,36 +172,42 @@ public class Crawler extends WebCrawler {
             LOGGER.debug("Text length: " + contentText.length());
             
             String extractedDate = SentientAnalyser.findSUTime(contentText);
-            LOGGER.debug("extractedDate: " + extractedDate);
-            
-            LocalDate date = LocalDate.parse(extractedDate),
-                    startDate = LocalDate.parse("2018-03-01"),
-                    endDate = LocalDate.parse("2018-03-08");
-            
-            // TODO: add option to select start and end date.
-            if (date.isBefore(startDate) || date.isAfter(endDate)) {
-                LOGGER.debug("Not in-between");
+            if (extractedDate == null) {
                 return;
             }
             
-            LOGGER.debug("in-between");
+            try {
+                LocalDate date = LocalDate.parse(extractedDate);
+                LOGGER.debug("date: " + date + " startDate: " + startDate + " endDate: " + endDate);
+                if (date.isBefore(startDate) || date.isAfter(endDate)) {
+                    LOGGER.debug("Not in-between.");
+                    return;
+                }
+            } catch (DateTimeParseException e) {
+                LOGGER.error("Failed to parse: " + extractedDate + " into a LocalDate: " + e.getMessage());
+                return;
+            }
+            
+            LOGGER.debug("In-between.");
             
             // #identifyOrganisationEntity returns a non-null result if the title contains a SOI.
-            String company = null;
+            String organisationEntity;
             try {
-                company = SentientAnalyser.identifyOrganisationEntity(contentText, trie);
+                organisationEntity = SentientAnalyser.identifyOrganisationEntity(contentText, trie);
             } catch (Exception e) {
-                LOGGER.debug(e);
-            }
-            LOGGER.debug("company: " + company);
-            // Exit page if the result is null.
-            if (company == null) {
-                LOGGER.debug("#identifyOrganisationEntity returned null. Exiting #visit.");
+                LOGGER.error("Failed to identify organisational entity in article: " + e.getMessage());
                 return;
             }
             
+            if (organisationEntity == null) {
+                LOGGER.debug("Failed to identify organisational entity in article.");
+                return;
+            }
+            
+            LOGGER.debug("Company: " + organisationEntity);
+            
             Stock stock = new Stock();
-            stock.setCompany(company);
+            stock.setCompany(organisationEntity);
             stock.setStartDate(startDate);
             stock.setEndDate(endDate);
             
@@ -203,10 +217,10 @@ public class Crawler extends WebCrawler {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            
             LOGGER.debug("Score: " + score);
             // Disregard -1 returns.
             if (score != -1) {
-                LOGGER.debug("Score != -1");
                 if (soiScoreMap == null) {
                     soiScoreMap = new HashMap<>();
                 }
@@ -214,8 +228,6 @@ public class Crawler extends WebCrawler {
                 // Initialise scores array list associated with stock if null.
                 soiScoreMap.computeIfAbsent(stock, k -> new ArrayList<>());
                 soiScoreMap.get(stock).add(score);
-            } else {
-                LOGGER.debug("Score == -1");
             }
         }
     }
@@ -268,6 +280,9 @@ public class Crawler extends WebCrawler {
             // Mark stock with the latest sentiment score.
             stock.setLatestSentimentScore(indexOfHighestFrequency);
             stock.setHistogram(histogram);
+            stock.setStartDate(startDate);
+            stock.setEndDate(endDate);
+            LOGGER.debug("startDate: " + startDate + " endDate: " + endDate);
         });
         
         publish(soiScoreMap);

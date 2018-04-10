@@ -1,5 +1,6 @@
 package com.merzadyan.crawler;
 
+import com.merzadyan.DateCategoriser;
 import com.merzadyan.SeedUrl;
 import com.merzadyan.SeedUrlRegistry;
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -9,11 +10,13 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 import org.apache.log4j.Logger;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_CRAWL_STORAGE_FOLDER;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_INCLUDE_HTTPS_PAGES;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_INTERVAL;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_MAX_DEPTH_OF_CRAWLING;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_NUMBER_OF_CRAWLERS;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_POLITENESS_DELAY;
@@ -24,6 +27,7 @@ import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_USER_AGENT_ST
 
 public class CrawlerManager {
     public static class DEFAULT {
+        public static final String DEFAULT_INTERVAL = new DateCategoriser(null).extractIntervals()[0];
         public static final String DEFAULT_USER_AGENT_STRING = "crawler4j (https://github.com/yasserg/crawler4j/)";
         public static final String DEFAULT_CRAWL_STORAGE_FOLDER = "/Users/fmerzadyan/data/crawler4j/";
         
@@ -58,6 +62,7 @@ public class CrawlerManager {
     private boolean test;
     private String testMode;
     
+    private String interval;
     private String userAgentString;
     private String crawlStorageFolder;
     
@@ -72,9 +77,10 @@ public class CrawlerManager {
     public CrawlerManager(CrawlerTerminationListener terminationListener) {
         crawlConfig = new CrawlConfig();
         
-        crawlerFactory = new CrawlerFactory(terminationListener);
+        crawlerFactory = new CrawlerFactory(terminationListener, null, null);
         
         seedUrlSet = new HashSet<>();
+        interval = DEFAULT_INTERVAL;
         userAgentString = DEFAULT_USER_AGENT_STRING;
         // Data dump is located in C:\Users\fmerzadyan\data\crawler4j.
         crawlStorageFolder = DEFAULT_CRAWL_STORAGE_FOLDER;
@@ -92,6 +98,11 @@ public class CrawlerManager {
     }
     
     public void startNonBlockingCrawl() throws Exception {
+        String[] intervalParts = interval.split(DateCategoriser.INTERVAL_DELIMITER);
+        LocalDate startDate = LocalDate.parse(intervalParts[0].trim()),
+                endDate = LocalDate.parse(intervalParts[1].trim());
+        crawlerFactory.setStartDate(startDate);
+        crawlerFactory.setEndDate(endDate);
         
         crawlConfig.setCrawlStorageFolder(crawlStorageFolder);
         // Max depth of crawling is set to infinite depth by default
@@ -224,6 +235,14 @@ public class CrawlerManager {
     
     public void setTestMode(String testMode) {
         this.testMode = testMode;
+    }
+    
+    public void setInterval(String interval) {
+        this.interval = interval;
+    }
+    
+    public String getInterval() {
+        return interval;
     }
     
     public String getUserAgentString() {

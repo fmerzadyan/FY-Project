@@ -13,11 +13,13 @@ public class Stock implements Comparator, Comparable, Serializable {
      * Default sentiment score is -1 indicating that it has not been updated with a sentiment score yet.
      * Calculated by extracting the mode value of sentiment scores for this stock.
      */
-    private int latestSentimentScore;
+    // Initialised here to prevent NullPointerExceptions during #equals and #hashCode comparisons.
+    private int latestSentimentScore = -1;
     /**
      * Default values is {-1, -1, -1, -1, -1} indicating it has been updated with sentiment scores yet.
      */
-    private int[] histogram;
+    // Initialised here to prevent NullPointerExceptions during #equals and #hashCode comparisons.
+    private int[] histogram = new int[]{-1, -1, -1, -1, -1};
     
     private LocalDate startDate,
             endDate;
@@ -30,8 +32,6 @@ public class Stock implements Comparator, Comparable, Serializable {
         this.company = company;
         this.symbol = symbol;
         this.stockExchange = stockExchange;
-        latestSentimentScore = -1;
-        histogram = new int[]{-1, -1, -1, -1, -1};
     }
     
     @Override
