@@ -18,11 +18,11 @@ public class SOIRegistry {
     private TreeSet<Stock> stockSet;
     private TreeSet<Stock> defaultStockSet;
     
-    private static final String DEFAULT_SOI_FILE_PATH = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\default-soi.txt";
+    private static final String DEFAULT_SOI_FILE_PATH = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\dictionary\\default-soi.txt";
     
     private SOIRegistry() {
         stockSet = new TreeSet<>();
-        String soiFilePath = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\soi.txt";
+        String soiFilePath = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\dictionary\\soi.txt";
         stockSet = extractStocks(soiFilePath, false);
         defaultStockSet = extractStocks(DEFAULT_SOI_FILE_PATH, true);
         

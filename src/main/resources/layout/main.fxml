@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <TabPane fx:id = "mainWindow" maxHeight = "-Infinity" maxWidth = "-Infinity" minHeight = "-Infinity"
-         minWidth = "-Infinity" prefHeight = "540.0" prefWidth = "814.0" stylesheets = "@main.css"
+         minWidth = "-Infinity" prefHeight = "540.0" prefWidth = "814.0" stylesheets = "@../style/main.css"
          tabClosingPolicy = "UNAVAILABLE" xmlns = "http://javafx.com/javafx/8.0.121"
          xmlns:fx = "http://javafx.com/fxml/1" fx:controller = "com.merzadyan.ui.MainWindow">
     <tabs>
@@ -50,7 +50,7 @@
                                                                 <ImageView fx:id = "deleteCrawlDataFileImgView"
                                                                            pickOnBounds = "true" preserveRatio = "true">
                                                                     <image>
-                                                                        <Image url = "@icons8-delete-file-filled-100.png" />
+                                                                        <Image url = "@../img/icons8-delete-file-filled-100.png" />
                                                                     </image>
                                                                 </ImageView>
                                                             </graphic>
@@ -64,7 +64,7 @@
                                                                 <ImageView fx:id = "deleteConsoleTextImgView"
                                                                            pickOnBounds = "true" preserveRatio = "true">
                                                                     <image>
-                                                                        <Image url = "@icons8-delete-filled-100.png" />
+                                                                        <Image url = "@../img/icons8-delete-filled-100.png" />
                                                                     </image>
                                                                 </ImageView>
                                                             </graphic>
@@ -93,7 +93,7 @@
                                                                 <ImageView fx:id = "startBtnImgView"
                                                                            pickOnBounds = "true" preserveRatio = "true">
                                                                     <image>
-                                                                        <Image url = "@icons8-circled-play-100.png" />
+                                                                        <Image url = "@../img/icons8-circled-play-100.png" />
                                                                     </image>
                                                                 </ImageView>
                                                             </graphic>
@@ -107,7 +107,7 @@
                                                                 <ImageView fx:id = "stopBtnImgView"
                                                                            pickOnBounds = "true" preserveRatio = "true">
                                                                     <image>
-                                                                        <Image url = "@icons8-pause-button-100.png" />
+                                                                        <Image url = "@../img/icons8-pause-button-100.png" />
                                                                     </image>
                                                                 </ImageView>
                                                             </graphic>
@@ -138,7 +138,7 @@
                             </children>
                         </AnchorPane>
                         <AnchorPane minHeight = "0.0" minWidth = "0.0" prefHeight = "418.0" prefWidth = "500.0"
-                                    styleClass = "primary" stylesheets = "@main.css">
+                                    styleClass = "primary" stylesheets = "@../style/main.css">
                             <children>
                                 <TextArea fx:id = "consoleTextArea" editable = "false" layoutX = "125.0"
                                           layoutY = "47.0" prefHeight = "389.0" prefWidth = "471.0" wrapText = "true"

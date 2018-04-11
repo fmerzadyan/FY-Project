@@ -186,7 +186,9 @@ public class MainWindow extends Application {
     public void start(Stage primaryStage) throws Exception {
         setUserAgentStylesheet(STYLESHEET_MODENA);
         
-        Scene scene = new Scene(FXMLLoader.load(getClass().getResource("main.fxml")));
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource("/layout/main.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         // Disable resizing ability of the window.
         primaryStage.setResizable(false);
@@ -363,13 +365,13 @@ public class MainWindow extends Application {
                                         LOGGER.debug(stock.getCompany());
                                         
                                         try {
-                                            FXMLLoader loader = new FXMLLoader(getClass().getResource("chart.fxml"));
+                                            FXMLLoader fxmlLoader = new FXMLLoader();
+                                            fxmlLoader.setLocation(getClass().getResource("/layout/chart.fxml"));
                                             
                                             Stage stage = new Stage();
-                                            stage.setScene(new Scene(loader.load()));
+                                            stage.setScene(new Scene(fxmlLoader.load()));
                                             
-                                            // TODO: enable persistent store of sentiment scores.
-                                            ChartWindow controller = loader.getController();
+                                            ChartWindow controller = fxmlLoader.getController();
                                             
                                             // Iterates through finalStockResultList, assumes only one entry
                                             // for a given company. If the company name matches then retrieve the data.
@@ -647,14 +649,14 @@ public class MainWindow extends Application {
      */
     public void deleteCrawlDataFile() {
         String filePath = crawlerManager.getCrawlStorageFolder();
-    
+        
         try {
             Files.walk(Paths.get(filePath))
                     .map(Path::toFile)
                     .sorted((o1, o2) -> -o1.compareTo(o2))
                     .forEach(File::delete);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
     

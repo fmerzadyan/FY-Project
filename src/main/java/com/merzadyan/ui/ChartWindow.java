@@ -35,7 +35,9 @@ public class ChartWindow extends Application {
     public void start(Stage primaryStage) throws Exception {
         setUserAgentStylesheet(STYLESHEET_MODENA);
         
-        Scene scene = new Scene(FXMLLoader.load(getClass().getResource("chart.fxml")));
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource("/layout/chart.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         // Disable resizing ability of the window.
         primaryStage.setResizable(false);
@@ -61,25 +63,25 @@ public class ChartWindow extends Application {
             } else if (stock.getEndDate().isAfter(latestStockData.getEndDate())) {
                 latestStockData = stock;
             }
-        
+            
             LOGGER.error("Common.isNullOrEmptyString(stock.getCompany()): " + Common.isNullOrEmptyString(stock.getCompany()));
             LOGGER.error("stock.getStartDate() == null" + stock.getStartDate() == null);
             LOGGER.error("stock.getEndDate() == null" + stock.getEndDate() == null);
-        
+            
             if (Common.isNullOrEmptyString(stock.getCompany()) || stock.getStartDate() == null ||
                     stock.getEndDate() == null) {
                 // Skip iteration if the required values are null.
                 // For precaution - should not be the case that this ever happens.
                 continue;
             }
-        
+            
             try {
                 LocalDate sld = stock.getStartDate(),
                         eld = stock.getEndDate();
                 String s = sld.getDayOfMonth() + "-" + sld.getMonthValue() + "-" + sld.getYear(),
                         e = eld.getDayOfMonth() + "-" + eld.getMonthValue() + "-" + eld.getYear(),
                         interval = s.concat(" to " + e);
-            
+                
                 sentimentValueSeries.getData().add(new XYChart.Data(interval, stock.getLatestSentimentScore()));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -87,17 +89,17 @@ public class ChartWindow extends Application {
         }
         
         lineChart.getData().addAll(sentimentValueSeries);
-    
-    
+        
+        
         barChart.setTitle(latestStockData.getCompany());
         barChartXAxis.setLabel("Distribution");
         barChartYAxis.setLabel("Frequency");
         barChart.setBarGap(0);
         barChart.setCategoryGap(0);
-    
+        
         XYChart.Series series = new XYChart.Series();
         series.setName("Sentiment Value");
-    
+        
         series.getData().add(new XYChart.Data<>("Negative", latestStockData.getHistogram()[0]));
         series.getData().add(new XYChart.Data<>("Somewhat negative", latestStockData.getHistogram()[1]));
         series.getData().add(new XYChart.Data<>("Neutral", latestStockData.getHistogram()[2]));
