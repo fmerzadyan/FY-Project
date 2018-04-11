@@ -30,6 +30,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -59,6 +60,8 @@ public class MainWindow extends Application {
     private CrawlerManager crawlerManager;
     private ResultsCallback resultsCallback;
     private CountDownLatch countDownLatch;
+    private HashMap<String, ArrayList<Stock>> stocksAsTimeProgresses;
+    // finalStockResultList is the result from the last crawl-process which process for one date interval.
     private ArrayList<Stock> finalStockResultList;
     private static final String SERIALISED_FILE_PATH = "src\\main\\resources\\History.ser";
     
@@ -72,8 +75,17 @@ public class MainWindow extends Application {
      * Main tab.
      */
     @FXML
-    private Button startBtn,
+    private Button deleteCrawlDataFileBtn,
+            deleteConsoleTextBtn,
+            startBtn,
             stopBtn;
+    
+    @FXML
+    private ImageView deleteCrawlDataFileImgView,
+            deleteConsoleTextImgView,
+            startBtnImgView,
+            stopBtnImgView;
+            
     
     @FXML
     private TextArea consoleTextArea;
@@ -178,11 +190,6 @@ public class MainWindow extends Application {
         
         // primaryStage.setAlwaysOnTop(true);
         primaryStage.setOnCloseRequest((event -> {
-            // Serialise the data in the event that the window was closed.
-            if (finalStockResultList != null && finalStockResultList.size() > 0) {
-                serialise();
-            }
-            
             // Force stop all threads.
             Platform.exit();
             System.exit(0);
@@ -239,15 +246,28 @@ public class MainWindow extends Application {
         /*
          * Main tab.
          */
+        deleteCrawlDataFileBtn.setPickOnBounds(false);
+        deleteConsoleTextBtn.setPickOnBounds(false);
         // Disable click-ability of unintended areas around button.
         startBtn.setPickOnBounds(false);
         stopBtn.setPickOnBounds(false);
+        
+        deleteCrawlDataFileImgView.setFitWidth(50);
+        deleteConsoleTextImgView.setFitWidth(50);
+        startBtnImgView.setFitWidth(50);
+        stopBtnImgView.setFitWidth(50);
+        deleteCrawlDataFileImgView.setPreserveRatio(true);
+        deleteConsoleTextImgView.setPreserveRatio(true);
+        startBtnImgView.setPreserveRatio(true);
+        stopBtnImgView.setPreserveRatio(true);
+        
         
         TextAreaAppender.setTextArea(consoleTextArea);
         consoleTextArea.appendText("Started application.\n");
         
         resultsCallback = new ResultsCallback();
         crawlerManager = new CrawlerManager(resultsCallback);
+        stocksAsTimeProgresses = new HashMap<>();
         finalStockResultList = new ArrayList<>();
         // Restore last saved state.
         deserialise();
@@ -347,6 +367,8 @@ public class MainWindow extends Application {
                                             // TODO: enable persistent store of sentiment scores.
                                             ChartWindow controller = loader.getController();
                                             
+                                            // Iterates through finalStockResultList, assumes only one entry
+                                            // for a given company. If the company name matches then retrieve the data.
                                             for (Stock result : finalStockResultList) {
                                                 if (result.getCompany().trim().toLowerCase().equals(stock.getCompany()
                                                         .trim().toLowerCase())) {
@@ -360,16 +382,28 @@ public class MainWindow extends Application {
                                                 }
                                             }
                                             
-                                            // Serialise the data.
-                                            if (finalStockResultList != null && finalStockResultList.size() > 0) {
-                                                serialise();
-                                            }
+                                            stocksAsTimeProgresses.forEach((k, list) -> {
+                                                LOGGER.debug("k: " + k + " list is null: " + (list == null) + " list.size: " + list.size());
+                                                for (Stock s : list) {
+                                                    String out = ("Stock: " + s.getCompany()) +
+                                                            " Symbol: " + s.getSymbol() +
+                                                            " Stock Exchange: " + s.getStockExchange() +
+                                                            " Sentiment Score: " + s.getLatestSentimentScore() +
+                                                            " Histogram: " + Arrays.toString(s.getHistogram()) +
+                                                            " Start Date: " + s.getStartDate() +
+                                                            " End Date: " + s.getEndDate();
+                                                    LOGGER.debug("result: " + out);
+                                                }
+                                            });
+                                            LOGGER.debug("passing into initData: " + stock.getCompany());
+                                            LOGGER.debug("passing into initData: " + stock.getCompany() + " list is null: " + (stocksAsTimeProgresses.get(stock.getCompany()) == null) + " list.size: " + stocksAsTimeProgresses.get(stock.getCompany()).size());
                                             
-                                            controller.initData(stock);
+                                            controller.initData(stocksAsTimeProgresses.get(stock.getCompany()));
                                             
                                             stage.show();
                                         } catch (Exception e) {
                                             LOGGER.error(e);
+                                            e.printStackTrace();
                                         }
                                     });
                                     setGraphic(btn);
@@ -512,7 +546,17 @@ public class MainWindow extends Application {
                         }
                     }
                     
+                    // Get the date interval.
+                    Stock dummy = null;
                     for (Stock stock : finalStockResultList) {
+                        // Only used to collect the date interval for later use.
+                        // To be extra cautious: null checks - should not be the case when these fields are ever null.
+                        if (dummy == null && !Common.isNullOrEmptyString(stock.getCompany()) &&
+                                stock.getStartDate() != null && stock.getEndDate() != null) {
+                            dummy = stock;
+                            dummy.setCompany(dummy.getCompany().toLowerCase());
+                        }
+                        
                         String out = ("Stock: " + stock.getCompany()) +
                                 " Symbol: " + stock.getSymbol() +
                                 " Stock Exchange: " + stock.getStockExchange() +
@@ -521,6 +565,50 @@ public class MainWindow extends Application {
                                 " Start Date: " + stock.getStartDate() +
                                 " End Date: " + stock.getEndDate();
                         LOGGER.debug("result: " + out);
+                    }
+                    
+                    if (dummy != null) {
+                        LOGGER.debug("dummy != null");
+                        // CountdownLatch ensures to execute after all the crawler threads have finished.
+                        // finalStockResultList holds a batch of stocks as a result of processing in a specified date interval,
+                        // therefore the date interval for all the stocks should be the same.
+                        try {
+                            // list represents the different intervals for a stock.
+                            ArrayList<Stock> list = stocksAsTimeProgresses.get(dummy.getCompany());
+                            
+                            if (list != null) {
+                                LOGGER.debug("list != null");
+                                for (Stock stock : list) {
+                                    // Check if there is there a result produced from this interval.
+                                    // If not then add and exit.
+                                    if (!stock.getStartDate().equals(dummy.getStartDate()) &&
+                                            !stock.getStartDate().equals(dummy.getStartDate())) {
+                                        list.add(dummy);
+                                        
+                                        stocksAsTimeProgresses.put(dummy.getCompany(), list);
+                                        // add only once.
+                                        break;
+                                    }
+                                }
+                            } else {
+                                LOGGER.debug("list == null");
+                                String out = ("Stock: " + dummy.getCompany()) +
+                                        " Symbol: " + dummy.getSymbol() +
+                                        " Stock Exchange: " + dummy.getStockExchange() +
+                                        " Sentiment Score: " + dummy.getLatestSentimentScore() +
+                                        " Histogram: " + Arrays.toString(dummy.getHistogram()) +
+                                        " Start Date: " + dummy.getStartDate() +
+                                        " End Date: " + dummy.getEndDate();
+                                LOGGER.debug("result: " + out);
+                                list = new ArrayList<>();
+                                list.add(dummy);
+                                stocksAsTimeProgresses.put(dummy.getCompany(), list);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        LOGGER.error("Did not save last result from crawl process.");
                     }
                 } catch (Exception e) {
                     LOGGER.fatal(e);
@@ -743,8 +831,8 @@ public class MainWindow extends Application {
             return;
         }
         
-        if (finalStockResultList == null) {
-            finalStockResultList = new ArrayList<>();
+        if (stocksAsTimeProgresses == null) {
+            stocksAsTimeProgresses = new HashMap<>();
         }
         
         FileInputStream fileInputStream = null;
@@ -754,7 +842,7 @@ public class MainWindow extends Application {
             objectInputStream = new ObjectInputStream(fileInputStream);
             History history = (History) objectInputStream.readObject();
             if (history != null && history.getLastSaved() != null && history.getLastSaved().size() > 0) {
-                finalStockResultList = history.getLastSaved();
+                stocksAsTimeProgresses = history.getLastSaved();
             }
         } catch (Exception e) {
             LOGGER.error(e);
@@ -780,8 +868,8 @@ public class MainWindow extends Application {
     public void serialise() {
         LOGGER.debug("serialise.");
         
-        // No need to serialise if the finalStockResultList is null or empty.
-        if (finalStockResultList == null || finalStockResultList == null || finalStockResultList.size() == 0) {
+        // No need to serialise if the stocksAsTimeProgresses is null or empty.
+        if (stocksAsTimeProgresses == null || stocksAsTimeProgresses.size() == 0) {
             return;
         }
         
@@ -792,7 +880,7 @@ public class MainWindow extends Application {
             fileOutputStream = new FileOutputStream(SERIALISED_FILE_PATH);
             objectOutputStream = new ObjectOutputStream(fileOutputStream);
             History history = new History();
-            history.setLastSaved(finalStockResultList);
+            history.setLastSaved(stocksAsTimeProgresses);
             objectOutputStream.writeObject(history);
         } catch (Exception e) {
             LOGGER.error(e);

@@ -31,16 +31,16 @@ public class CrawlerManager {
         public static final String DEFAULT_USER_AGENT_STRING = "crawler4j (https://github.com/yasserg/crawler4j/)";
         public static final String DEFAULT_CRAWL_STORAGE_FOLDER = "/Users/fmerzadyan/data/crawler4j/";
         
-        public static final int DEFAULT_NUMBER_OF_CRAWLERS = 2;
+        public static final int DEFAULT_NUMBER_OF_CRAWLERS = 8;
         public static final int DEFAULT_MAX_DEPTH_OF_CRAWLING = 50;
-        public static final int DEFAULT_POLITENESS_DELAY = 1000;
+        public static final int DEFAULT_POLITENESS_DELAY = 200;
         
         public static final boolean DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING = false;
         public static final boolean DEFAULT_INCLUDE_HTTPS_PAGES = true;
-        public static final boolean DEFAULT_RESUMABLE_CRAWLING = true;
+        public static final boolean DEFAULT_RESUMABLE_CRAWLING = false;
         
-        public static final boolean DEFAULT_TEST = false;
-        public static final String DEFAULT_TEST_MODE = null;
+        public static final boolean DEFAULT_TEST = true;
+        public static final String DEFAULT_TEST_MODE = MODE.TEST_MODE_COMPLEX;
     }
     
     /**
