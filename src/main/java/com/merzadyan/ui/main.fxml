@@ -43,7 +43,8 @@
                                                         <Button fx:id = "deleteCrawlDataFileBtn" alignment = "CENTER"
                                                                 defaultButton = "true" maxHeight = "0.0"
                                                                 maxWidth = "0.0" minHeight = "0.0" minWidth = "0.0"
-                                                                mnemonicParsing = "false" prefHeight = "0.0"
+                                                                mnemonicParsing = "false"
+                                                                onAction = "#deleteCrawlDataFile" prefHeight = "0.0"
                                                                 prefWidth = "0.0" styleClass = "image-button">
                                                             <graphic>
                                                                 <ImageView fx:id = "deleteCrawlDataFileImgView"
@@ -57,8 +58,8 @@
                                                         <Button fx:id = "deleteConsoleTextBtn" alignment = "CENTER"
                                                                 maxHeight = "0.0" maxWidth = "0.0" minHeight = "0.0"
                                                                 minWidth = "0.0" mnemonicParsing = "false"
-                                                                prefHeight = "0.0" prefWidth = "0.0"
-                                                                styleClass = "image-button">
+                                                                onAction = "#deleteConsoleText" prefHeight = "0.0"
+                                                                prefWidth = "0.0" styleClass = "image-button">
                                                             <graphic>
                                                                 <ImageView fx:id = "deleteConsoleTextImgView"
                                                                            pickOnBounds = "true" preserveRatio = "true">

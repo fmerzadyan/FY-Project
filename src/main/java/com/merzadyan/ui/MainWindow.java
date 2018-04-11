@@ -36,11 +36,15 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,7 +89,7 @@ public class MainWindow extends Application {
             deleteConsoleTextImgView,
             startBtnImgView,
             stopBtnImgView;
-            
+    
     
     @FXML
     private TextArea consoleTextArea;
@@ -634,6 +638,29 @@ public class MainWindow extends Application {
         if (crawlerManager != null) {
             crawlerManager.stopCrawl();
         }
+    }
+    
+    /**
+     * Deletes the data dump produced from crawling.
+     */
+    public void deleteCrawlDataFile() {
+        String filePath = crawlerManager.getCrawlStorageFolder();
+    
+        try {
+            Files.walk(Paths.get(filePath))
+                    .map(Path::toFile)
+                    .sorted((o1, o2) -> -o1.compareTo(o2))
+                    .forEach(File::delete);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Clears the console.
+     */
+    public void deleteConsoleText() {
+        consoleTextArea.clear();
     }
     
     public void addSeedUrl() {
