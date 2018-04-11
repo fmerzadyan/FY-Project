@@ -132,7 +132,7 @@ public class CrawlerManager {
         controller = new CrawlController(crawlConfig, pageFetcher, robotstxtServer);
         
         if (test && testMode != null && !testMode.isEmpty()) {
-            LOGGER.debug("testMode: " + testMode);
+            LOGGER.debug("Test mode: " + testMode);
             switch (testMode) {
                 case MODE.TEST_MODE_SIMPLE:
                     LOGGER.debug("Adding " + SeedUrlRegistry.TEST_MODE_SIMPLE_URL + " as a seed url.");
@@ -157,7 +157,7 @@ public class CrawlerManager {
                     break;
             }
         } else {
-            LOGGER.debug("(Default configs.");
+            LOGGER.debug("(Using default configs.");
             for (SeedUrl url : SeedUrlRegistry.getInstance().getUrlSet()) {
                 if (url.getType() == SeedUrl.Type.DEFAULT) {
                     controller.addSeed(url.getUrl());
@@ -309,36 +309,5 @@ public class CrawlerManager {
     
     public void setResumableCrawling(boolean resumableCrawling) {
         this.resumableCrawling = resumableCrawling;
-    }
-    
-    public static void main(String[] args) {
-        CrawlerTerminationListener listener = soiScoreMap -> {
-            LOGGER.debug("#onTermination");
-            if (soiScoreMap == null) {
-                return;
-            }
-            
-            try {
-                soiScoreMap.forEach((stock, scores) -> {
-                    String out = ("Stock: " + stock.getCompany()) +
-                            " Symbol: " + stock.getSymbol() +
-                            " Stock Exchange: " + stock.getStockExchange() +
-                            " Sentiment Score: " + stock.getLatestSentimentScore();
-                    LOGGER.debug("result: " + out);
-                });
-            } catch (Exception e) {
-                LOGGER.fatal(e);
-            }
-        };
-        CrawlerManager crawlerManager = new CrawlerManager(listener);
-        crawlerManager.setNumberOfCrawlers(1);
-        crawlerManager.setTest(true);
-        crawlerManager.setTestMode(MODE.TEST_MODE_SIMPLE);
-        
-        try {
-            crawlerManager.startNonBlockingCrawl();
-        } catch (Exception e) {
-            LOGGER.error(e);
-        }
     }
 }

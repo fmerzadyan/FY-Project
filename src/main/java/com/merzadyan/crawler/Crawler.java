@@ -45,7 +45,7 @@ public class Crawler extends WebCrawler {
     
     Crawler(CrawlerTerminationListener terminationListener, LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
-            LOGGER.fatal("Start date and/or end date is not specified.");
+            LOGGER.error("Start date and/or end date is not specified.");
             return;
         }
         this.startDate = startDate;
@@ -85,7 +85,7 @@ public class Crawler extends WebCrawler {
     private void constructTrie() {
         SOIRegistry soiRegistry = SOIRegistry.getInstance();
         if (soiRegistry == null) {
-            LOGGER.debug("SOIRegistry: null.");
+            LOGGER.error("SOIRegistry: null.");
             return;
         }
         
@@ -202,7 +202,7 @@ public class Crawler extends WebCrawler {
             }
             
             if (organisationEntity == null) {
-                LOGGER.debug("Failed to identify organisational entity in article.");
+                LOGGER.debug("Failed to identify an organisational entity in article.");
                 return;
             }
             
@@ -220,7 +220,7 @@ public class Crawler extends WebCrawler {
                 e.printStackTrace();
             }
             
-            LOGGER.debug("Score: " + score);
+            LOGGER.debug("Sentiment value: " + score);
             // Disregard -1 returns.
             if (score != -1) {
                 if (soiScoreMap == null) {
@@ -277,14 +277,13 @@ public class Crawler extends WebCrawler {
                 }
             }
             
-            LOGGER.debug("stock: " + stock.getCompany() + " histogram: " + Arrays.toString(histogram) +
-                    " highestFrequency: " + highestFrequency + " indexOfHighestFrequency: " + indexOfHighestFrequency);
+            LOGGER.debug("Stock: " + stock.getCompany() + " Histogram: " + Arrays.toString(histogram) +
+                    " Predominant sentiment: " + highestFrequency);
             // Mark stock with the latest sentiment score.
             stock.setLatestSentimentScore(indexOfHighestFrequency);
             stock.setHistogram(histogram);
             stock.setStartDate(startDate);
             stock.setEndDate(endDate);
-            LOGGER.debug("startDate: " + startDate + " endDate: " + endDate);
         });
         
         publish(soiScoreMap);
