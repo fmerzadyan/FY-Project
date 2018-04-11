@@ -34,6 +34,10 @@ public class SentientAnalyser {
     
     private static final AnnotationPipeline suTimePipeline = getSuTimePipeline();
     private static final Pattern dateFormatRegex = getDateFormatRegex();
+    /**
+     * Used as an exception case for matching yyyy-mm-ddThh:mm formats.
+     */
+    private static final Pattern dateTimeFormatRefex = getDateTimeFormatRegex();
     
     private static StanfordCoreNLP getSentimentPipeline() {
         // Disable logs.
@@ -87,6 +91,15 @@ public class SentientAnalyser {
      */
     private static Pattern getDateFormatRegex() {
         return Pattern.compile("^2018-(0[1-9]|1[0-2])-(0[0-9]|1[0-9]|2[0-9]|3[0-1])?$");
+    }
+    
+    /**
+     * Matches yyyy-mm-ddThh:mm format.
+     *
+     * @return
+     */
+    private static Pattern getDateTimeFormatRegex() {
+        return Pattern.compile("^2018-(0[1-9]|1[0-2])-(0[0-9]|1[0-9]|2[0-9]|3[0-1])(T(0[1-9]|1[1-9]|2[1-3]):(0[1-9]|1[1-9]|2[1-9]|3[1-9]|4[1-9]|5[1-9]))?$");
     }
     
     /**
@@ -214,6 +227,12 @@ public class SentientAnalyser {
             if (dateFormatRegex.matcher(extractedDate).matches()) {
                 // By breaking: gets the first date in the text.
                 // IMPORTANT NOTE: (Assumes this is the date that we want).
+                break;
+            } else if (dateTimeFormatRefex.matcher(extractedDate).matches()) {
+                // Exception case: matches articles with yyyy-mm-ddThh:mm formats.
+                String[] dateTimeParts = extractedDate.split("T");
+                // Only the part before the T is wanted.
+                extractedDate = dateTimeParts[0];
                 break;
             }
         }
