@@ -67,8 +67,6 @@ public class DateCategoriser {
             }
         }
         
-        LOGGER.debug("startOfCalendar: " + startDate + " nthWeek: " + nthWeek + " startDateOfWeek: " + startDateOfWeek +
-                " endDateOfWeek: " + endDateOfWeek);
         return new Data(nthWeek, startDate, startDateOfWeek, endDateOfWeek);
     }
     

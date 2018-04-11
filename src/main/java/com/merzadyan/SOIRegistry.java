@@ -34,12 +34,10 @@ public class SOIRegistry {
     
     private TreeSet<Stock> extractStocks(String soiFilePath, boolean useDefault) {
         if (Common.isNullOrEmptyString(soiFilePath)) {
-            LOGGER.debug("Error: file is not set.");
             return null;
         }
         
         if (!Common.isFile(soiFilePath)) {
-            LOGGER.debug("Error: " + soiFilePath + " does not exist.");
             return null;
         }
         
@@ -47,7 +45,6 @@ public class SOIRegistry {
         if (Common.isEmptyFile(filePath) && useDefault) {
             filePath = DEFAULT_SOI_FILE_PATH;
         } else if (Common.isEmptyFile(filePath) && !useDefault) {
-            LOGGER.error("Error: " + soiFilePath + " is empty and useDefault option is false.");
             return null;
         }
         

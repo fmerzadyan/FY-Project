@@ -41,7 +41,7 @@ public class TextAreaAppender extends WriterAppender {
                         }
                     }
                 } catch (Exception e) {
-                    LOGGER.debug("Failed to append message to the TextArea.");
+                    e.printStackTrace();
                 }
             });
         } catch (Exception e) {
