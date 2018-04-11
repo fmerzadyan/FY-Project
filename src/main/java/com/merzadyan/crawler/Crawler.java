@@ -184,7 +184,8 @@ public class Crawler extends WebCrawler {
                     return;
                 }
             } catch (DateTimeParseException e) {
-                LOGGER.error("Failed to parse: " + extractedDate + " into a LocalDate: " + e.getMessage());
+                LOGGER.error("Failed to parse: " + extractedDate + " into a LocalDate.");
+                e.printStackTrace();
                 return;
             }
             
@@ -195,7 +196,8 @@ public class Crawler extends WebCrawler {
             try {
                 organisationEntity = SentientAnalyser.identifyOrganisationEntity(contentText, trie);
             } catch (Exception e) {
-                LOGGER.error("Failed to identify organisational entity in article: " + e.getMessage());
+                LOGGER.error("Failed to identify organisational entity in article.");
+                e.printStackTrace();
                 return;
             }
             

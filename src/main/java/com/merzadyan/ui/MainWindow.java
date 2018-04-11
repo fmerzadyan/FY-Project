@@ -162,8 +162,6 @@ public class MainWindow extends Application {
     private class ResultsCallback implements CrawlerTerminationListener {
         @Override
         public void onTermination(HashMap<Stock, ArrayList<Integer>> soiScoreMap) {
-            LOGGER.debug("#onTermination.");
-            
             countDownLatch.countDown();
             
             if (soiScoreMap == null) {
@@ -177,7 +175,7 @@ public class MainWindow extends Application {
                     }
                 });
             } catch (Exception e) {
-                LOGGER.fatal(e);
+                e.printStackTrace();
             }
         }
     }
@@ -304,13 +302,9 @@ public class MainWindow extends Application {
                                 } else {
                                     btn.setOnAction(event -> {
                                         SeedUrl url = getTableView().getItems().get(getIndex());
-                                        LOGGER.debug(url.getUrl());
-                                        
                                         if (!url.getType().equals(SeedUrl.Type.DEFAULT)) {
                                             SeedUrlRegistry.getInstance().remove(url);
                                             seedUrlObservableList.remove(url);
-                                        } else {
-                                            LOGGER.debug("Will not remove DEFAULT type url.");
                                         }
                                     });
                                     setGraphic(btn);
@@ -362,8 +356,6 @@ public class MainWindow extends Application {
                                 } else {
                                     btn.setOnAction(event -> {
                                         Stock stock = getTableView().getItems().get(getIndex());
-                                        LOGGER.debug(stock.getCompany());
-                                        
                                         try {
                                             FXMLLoader fxmlLoader = new FXMLLoader();
                                             fxmlLoader.setLocation(getClass().getResource("/layout/chart.fxml"));
@@ -388,27 +380,10 @@ public class MainWindow extends Application {
                                                 }
                                             }
                                             
-                                            stocksAsTimeProgresses.forEach((k, list) -> {
-                                                LOGGER.debug("k: " + k + " list is null: " + (list == null) + " list.size: " + list.size());
-                                                for (Stock s : list) {
-                                                    String out = ("Stock: " + s.getCompany()) +
-                                                            " Symbol: " + s.getSymbol() +
-                                                            " Stock Exchange: " + s.getStockExchange() +
-                                                            " Sentiment Score: " + s.getLatestSentimentScore() +
-                                                            " Histogram: " + Arrays.toString(s.getHistogram()) +
-                                                            " Start Date: " + s.getStartDate() +
-                                                            " End Date: " + s.getEndDate();
-                                                    LOGGER.debug("result: " + out);
-                                                }
-                                            });
-                                            LOGGER.debug("passing into initData: " + stock.getCompany());
-                                            LOGGER.debug("passing into initData: " + stock.getCompany() + " list is null: " + (stocksAsTimeProgresses.get(stock.getCompany()) == null) + " list.size: " + stocksAsTimeProgresses.get(stock.getCompany()).size());
-                                            
                                             controller.initData(stocksAsTimeProgresses.get(stock.getCompany()));
                                             
                                             stage.show();
                                         } catch (Exception e) {
-                                            LOGGER.error(e);
                                             e.printStackTrace();
                                         }
                                     });
@@ -445,8 +420,6 @@ public class MainWindow extends Application {
                                 } else {
                                     btn.setOnAction(event -> {
                                         Stock stock = getTableView().getItems().get(getIndex());
-                                        LOGGER.debug(stock.getCompany());
-                                        
                                         SOIRegistry.getInstance().remove(stock);
                                         soiObservableList.remove(stock);
                                     });
@@ -504,8 +477,6 @@ public class MainWindow extends Application {
     }
     
     public void startCrawlers() {
-        LOGGER.debug("startCrawlers");
-        
         if (currentlyCrawling) {
             return;
         }
@@ -517,7 +488,6 @@ public class MainWindow extends Application {
             // buffer size of GUI console: keep one non-static instance of the GUI console and retrieve my logs i.e.
             // relevant tracing info and analysis results?
             if (crawlerManager == null) {
-                LOGGER.fatal("CrawlerManager: null");
                 return;
             }
             
@@ -564,8 +534,6 @@ public class MainWindow extends Application {
                         }
                         
                         String out = ("Stock: " + stock.getCompany()) +
-                                " Symbol: " + stock.getSymbol() +
-                                " Stock Exchange: " + stock.getStockExchange() +
                                 " Sentiment Score: " + stock.getLatestSentimentScore() +
                                 " Histogram: " + Arrays.toString(stock.getHistogram()) +
                                 " Start Date: " + stock.getStartDate() +
@@ -574,7 +542,6 @@ public class MainWindow extends Application {
                     }
                     
                     if (dummy != null) {
-                        LOGGER.debug("dummy != null");
                         // CountdownLatch ensures to execute after all the crawler threads have finished.
                         // finalStockResultList holds a batch of stocks as a result of processing in a specified date interval,
                         // therefore the date interval for all the stocks should be the same.
@@ -583,7 +550,6 @@ public class MainWindow extends Application {
                             ArrayList<Stock> list = stocksAsTimeProgresses.get(dummy.getCompany());
                             
                             if (list != null) {
-                                LOGGER.debug("list != null");
                                 for (Stock stock : list) {
                                     // Check if there is there a result produced from this interval.
                                     // If not then add and exit.
@@ -597,15 +563,6 @@ public class MainWindow extends Application {
                                     }
                                 }
                             } else {
-                                LOGGER.debug("list == null");
-                                String out = ("Stock: " + dummy.getCompany()) +
-                                        " Symbol: " + dummy.getSymbol() +
-                                        " Stock Exchange: " + dummy.getStockExchange() +
-                                        " Sentiment Score: " + dummy.getLatestSentimentScore() +
-                                        " Histogram: " + Arrays.toString(dummy.getHistogram()) +
-                                        " Start Date: " + dummy.getStartDate() +
-                                        " End Date: " + dummy.getEndDate();
-                                LOGGER.debug("result: " + out);
                                 list = new ArrayList<>();
                                 list.add(dummy);
                                 stocksAsTimeProgresses.put(dummy.getCompany(), list);
@@ -615,11 +572,9 @@ public class MainWindow extends Application {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    } else {
-                        LOGGER.error("Did not save last result from crawl process.");
                     }
                 } catch (Exception e) {
-                    LOGGER.fatal(e);
+                    e.printStackTrace();
                 }
             }).start();
             
@@ -627,14 +582,12 @@ public class MainWindow extends Application {
             crawlerManager.startNonBlockingCrawl();
             currentlyCrawling = true;
             startBtn.setDisable(true);
-        } catch (Exception ex) {
-            LOGGER.debug(ex);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
     public void stopCrawlers() {
-        LOGGER.debug("stopCrawlers");
-        
         if (!currentlyCrawling) {
             return;
         }
@@ -656,7 +609,7 @@ public class MainWindow extends Application {
                     .sorted((o1, o2) -> -o1.compareTo(o2))
                     .forEach(File::delete);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -852,8 +805,6 @@ public class MainWindow extends Application {
     }
     
     public void deserialise() {
-        LOGGER.debug("deserialise.");
-        
         if (!Common.isFile(SERIALISED_FILE_PATH)) {
             return;
         }
@@ -876,13 +827,13 @@ public class MainWindow extends Application {
                 stocksAsTimeProgresses = history.getLastSaved();
             }
         } catch (Exception e) {
-            LOGGER.error(e);
+            e.printStackTrace();
         } finally {
             if (fileInputStream != null) {
                 try {
                     fileInputStream.close();
                 } catch (IOException e) {
-                    LOGGER.error(e);
+                    e.printStackTrace();
                 }
             }
             
@@ -890,15 +841,13 @@ public class MainWindow extends Application {
                 try {
                     objectInputStream.close();
                 } catch (IOException e) {
-                    LOGGER.error(e);
+                    e.printStackTrace();
                 }
             }
         }
     }
     
     public void serialise() {
-        LOGGER.debug("serialise.");
-        
         // No need to serialise if the stocksAsTimeProgresses is null or empty.
         if (stocksAsTimeProgresses == null || stocksAsTimeProgresses.size() == 0) {
             return;
@@ -914,13 +863,13 @@ public class MainWindow extends Application {
             history.setLastSaved(stocksAsTimeProgresses);
             objectOutputStream.writeObject(history);
         } catch (Exception e) {
-            LOGGER.error(e);
+            e.printStackTrace();
         } finally {
             if (fileOutputStream != null) {
                 try {
                     fileOutputStream.close();
                 } catch (IOException e) {
-                    LOGGER.error(e);
+                    e.printStackTrace();
                 }
             }
             
@@ -928,7 +877,7 @@ public class MainWindow extends Application {
                 try {
                     objectOutputStream.close();
                 } catch (IOException e) {
-                    LOGGER.error(e);
+                    e.printStackTrace();
                 }
             }
         }

@@ -47,7 +47,6 @@ public class ChartWindow extends Application {
     @FXML
     void initData(@NotNull ArrayList<Stock> list) {
         if (list == null || list.size() == 0) {
-            LOGGER.error("list == null || list.size == 0");
             return;
         }
         
@@ -63,10 +62,6 @@ public class ChartWindow extends Application {
             } else if (stock.getEndDate().isAfter(latestStockData.getEndDate())) {
                 latestStockData = stock;
             }
-            
-            LOGGER.error("Common.isNullOrEmptyString(stock.getCompany()): " + Common.isNullOrEmptyString(stock.getCompany()));
-            LOGGER.error("stock.getStartDate() == null" + stock.getStartDate() == null);
-            LOGGER.error("stock.getEndDate() == null" + stock.getEndDate() == null);
             
             if (Common.isNullOrEmptyString(stock.getCompany()) || stock.getStartDate() == null ||
                     stock.getEndDate() == null) {
@@ -106,68 +101,5 @@ public class ChartWindow extends Application {
         series.getData().add(new XYChart.Data<>("Somewhat positive", latestStockData.getHistogram()[3]));
         series.getData().add(new XYChart.Data<>("Positive", latestStockData.getHistogram()[4]));
         barChart.getData().addAll(series);
-    }
-    
-    @FXML
-    void initData(@NotNull Stock stock) {
-        if (lineChart == null) {
-            LOGGER.debug("lineChart: null");
-            lineChart = new LineChart<>(lineChartXAxis, lineChartYAxis);
-        }
-        
-        if (Common.isNullOrEmptyString(stock.getCompany()) || stock.getStartDate() == null ||
-                stock.getEndDate() == null) {
-            return;
-        }
-        
-        lineChart.setTitle(stock.getCompany());
-        
-        // IMPORTANT NOTE: The time measurement unit is undecided - waiting to determine the life-span of a prediction.
-        lineChartXAxis.setLabel("Date");
-        
-        // Define the series.
-        // TODO: with each crawl for date period, add the data to this chart.
-        // TODO: maybe look into doing a trend line using historic values?
-        XYChart.Series sentimentValueSeries = new XYChart.Series();
-        sentimentValueSeries.setName("Sentiment Value");
-        LocalDate sld = stock.getStartDate(),
-                eld = stock.getEndDate();
-        String s = sld.getDayOfMonth() + "-" + sld.getMonthValue() + "-" + sld.getYear(),
-                e = eld.getDayOfMonth() + "-" + eld.getMonthValue() + "-" + eld.getYear(),
-                interval = s.concat(" to " + e);
-        
-        sentimentValueSeries.getData().add(new XYChart.Data(interval, stock.getLatestSentimentScore()));
-        
-        lineChart.getData().add(sentimentValueSeries);
-        
-        barChart.setTitle(stock.getCompany());
-        barChartXAxis.setLabel("Distribution");
-        barChartYAxis.setLabel("Frequency");
-        barChart.setBarGap(0);
-        barChart.setCategoryGap(0);
-        
-        XYChart.Series series = new XYChart.Series();
-        series.setName("Sentiment Value");
-        
-        series.getData().add(new XYChart.Data<>("Negative", stock.getHistogram()[0]));
-        series.getData().add(new XYChart.Data<>("Somewhat negative", stock.getHistogram()[1]));
-        series.getData().add(new XYChart.Data<>("Neutral", stock.getHistogram()[2]));
-        series.getData().add(new XYChart.Data<>("Somewhat positive", stock.getHistogram()[3]));
-        series.getData().add(new XYChart.Data<>("Positive", stock.getHistogram()[4]));
-        barChart.getData().addAll(series);
-    }
-    
-    
-    @FXML
-    public void initialize() {
-        // Stock s = new Stock();
-        // s.setCompany("Bae Systems");
-        // s.setSymbol("BA.");
-        // s.setStockExchange("LSE");
-        // s.setLatestSentimentScore(4);
-        // s.setHistogram(new int[]{0, 4, 0, 0, 0});
-        // s.setStartDate(LocalDate.parse("2018-03-01"));
-        // s.setEndDate(LocalDate.parse("2018-03-08"));
-        // initData(s);
     }
 }
