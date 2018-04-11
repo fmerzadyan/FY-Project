@@ -608,6 +608,8 @@ public class MainWindow extends Application {
                                 list.add(dummy);
                                 stocksAsTimeProgresses.put(dummy.getCompany(), list);
                             }
+                            
+                            serialise();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
