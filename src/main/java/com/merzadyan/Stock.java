@@ -71,8 +71,8 @@ public class Stock implements Comparator, Comparable, Serializable {
         int result = 23;
         
         result = 37 * result + latestSentimentScore;
-        for (int i = 0; i < histogram.length; i++) {
-            result = 37 * result + histogram[i];
+        for (int value : histogram) {
+            result = 37 * result + value;
         }
         result = 37 * result + (company == null ? 0 : company.hashCode());
         result = 37 * result + (symbol == null ? 0 : symbol.hashCode());

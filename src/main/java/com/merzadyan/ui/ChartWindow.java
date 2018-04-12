@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+@SuppressWarnings("unchecked")
 public class ChartWindow extends Application {
     private static final Logger LOGGER = Logger.getLogger(ChartWindow.class.getName());
     
@@ -54,9 +55,7 @@ public class ChartWindow extends Application {
         sentimentValueSeries.setName("Sentiment Value");
         
         Stock latestStockData = null;
-        for (int i = 0; i < list.size(); i++) {
-            Stock stock = list.get(i);
-            
+        for (Stock stock : list) {
             if (latestStockData == null) {
                 latestStockData = stock;
             } else if (stock.getEndDate().isAfter(latestStockData.getEndDate())) {

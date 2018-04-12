@@ -25,6 +25,7 @@ import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_TEST;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_TEST_MODE;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_USER_AGENT_STRING;
 
+@SuppressWarnings("unchecked")
 public class CrawlerManager {
     public static class DEFAULT {
         public static final String DEFAULT_INTERVAL = new DateCategoriser(null).extractIntervals()[0];

@@ -37,7 +37,7 @@ public class SentientAnalyser {
     /**
      * Used as an exception case for matching yyyy-mm-ddThh:mm formats.
      */
-    private static final Pattern dateTimeFormatRefex = getDateTimeFormatRegex();
+    private static final Pattern dateTimeFormatRegex = getDateTimeFormatRegex();
     
     private static StanfordCoreNLP getSentimentPipeline() {
         // Disable logs.
@@ -228,7 +228,7 @@ public class SentientAnalyser {
                 // By breaking: gets the first date in the text.
                 // IMPORTANT NOTE: (Assumes this is the date that we want).
                 break;
-            } else if (dateTimeFormatRefex.matcher(extractedDate).matches()) {
+            } else if (dateTimeFormatRegex.matcher(extractedDate).matches()) {
                 // Exception case: matches articles with yyyy-mm-ddThh:mm formats.
                 String[] dateTimeParts = extractedDate.split("T");
                 // Only the part before the T is wanted.

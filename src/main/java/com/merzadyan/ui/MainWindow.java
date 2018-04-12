@@ -58,11 +58,11 @@ import java.util.concurrent.ScheduledFuture;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+@SuppressWarnings("unchecked")
 public class MainWindow extends Application {
     private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
     
     private CrawlerManager crawlerManager;
-    private ResultsCallback resultsCallback;
     private CountDownLatch countDownLatch;
     private HashMap<String, ArrayList<Stock>> stocksAsTimeProgresses;
     // finalStockResultList is the result from the last crawl-process which process for one date interval.
@@ -269,7 +269,7 @@ public class MainWindow extends Application {
         TextAreaAppender.setTextArea(consoleTextArea);
         consoleTextArea.appendText("Started application.\n");
         
-        resultsCallback = new ResultsCallback();
+        ResultsCallback resultsCallback = new ResultsCallback();
         crawlerManager = new CrawlerManager(resultsCallback);
         stocksAsTimeProgresses = new HashMap<>();
         finalStockResultList = new ArrayList<>();
@@ -440,9 +440,7 @@ public class MainWindow extends Application {
         
         preselectedStockSlider.setLabelFormatter(binaryLabelFormat);
         togglePreselectedStock();
-        preselectedStockSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            togglePreselectedStock();
-        });
+        preselectedStockSlider.valueProperty().addListener((observable, oldValue, newValue) -> togglePreselectedStock());
         
         preselectedStocksComboBox.getItems().clear();
         preselectedStocksComboBox.setCellFactory(stockCellCallback);
@@ -471,9 +469,7 @@ public class MainWindow extends Application {
         
         testSlider.setLabelFormatter(binaryLabelFormat);
         toggleTest();
-        testSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            toggleTest();
-        });
+        testSlider.valueProperty().addListener((observable, oldValue, newValue) -> toggleTest());
     }
     
     public void startCrawlers() {
