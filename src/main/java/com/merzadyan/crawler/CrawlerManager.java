@@ -108,7 +108,6 @@ public class CrawlerManager {
         crawlConfig.setCrawlStorageFolder(crawlStorageFolder);
         // Max depth of crawling is set to infinite depth by default
         // where the seed url is 0 depth and its child url is 1.
-        // TODO: max depth for crawling?
         crawlConfig.setMaxDepthOfCrawling(maxDepthOfCrawling);
         // Including https pages is set to false by default.
         crawlConfig.setIncludeHttpsPages(includeHttpsPages);

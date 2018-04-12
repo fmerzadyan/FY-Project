@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 
 import java.util.TreeSet;
 
-// TODO: find suitable seed URLs.
 public class SeedUrlRegistry {
     private static final Logger LOGGER = Logger.getLogger(SeedUrlRegistry.class.getName());
     
