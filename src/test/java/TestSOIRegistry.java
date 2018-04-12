@@ -1,4 +1,4 @@
-import com.merzadyan.SOIRegistry;
+import com.merzadyan.stock.SOIRegistry;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

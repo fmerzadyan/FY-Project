@@ -1,4 +1,4 @@
-package com.merzadyan;
+package com.merzadyan.stock;
 
 import org.apache.log4j.Logger;
 

@@ -1,4 +1,4 @@
-import com.merzadyan.Stock;
+import com.merzadyan.stock.Stock;
 import com.merzadyan.crawler.CrawlerManager;
 import org.apache.commons.lang.SerializationException;
 import org.apache.log4j.Logger;

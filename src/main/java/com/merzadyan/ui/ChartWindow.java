@@ -2,7 +2,7 @@ package com.merzadyan.ui;
 
 import com.drew.lang.annotations.NotNull;
 import com.merzadyan.Common;
-import com.merzadyan.Stock;
+import com.merzadyan.stock.Stock;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

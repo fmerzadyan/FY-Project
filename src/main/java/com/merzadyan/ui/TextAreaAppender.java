@@ -1,4 +1,4 @@
-package com.merzadyan;
+package com.merzadyan.ui;
 
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;

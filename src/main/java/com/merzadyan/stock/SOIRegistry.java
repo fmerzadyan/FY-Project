@@ -1,5 +1,6 @@
-package com.merzadyan;
+package com.merzadyan.stock;
 
+import com.merzadyan.Common;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;

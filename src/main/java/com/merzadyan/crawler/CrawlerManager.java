@@ -1,8 +1,8 @@
 package com.merzadyan.crawler;
 
-import com.merzadyan.DateCategoriser;
-import com.merzadyan.SeedUrl;
-import com.merzadyan.SeedUrlRegistry;
+import com.merzadyan.stock.DateCategoriser;
+import com.merzadyan.seed.SeedUrl;
+import com.merzadyan.seed.SeedUrlRegistry;
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;

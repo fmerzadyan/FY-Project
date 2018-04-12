@@ -1,8 +1,8 @@
 package com.merzadyan.crawler;
 
-import com.merzadyan.SOIRegistry;
-import com.merzadyan.SentientAnalyser;
-import com.merzadyan.Stock;
+import com.merzadyan.stock.SOIRegistry;
+import com.merzadyan.analyser.SentientAnalyser;
+import com.merzadyan.stock.Stock;
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;

@@ -1,4 +1,4 @@
-package com.merzadyan;
+package com.merzadyan.stock;
 
 import java.io.Serializable;
 import java.util.ArrayList;

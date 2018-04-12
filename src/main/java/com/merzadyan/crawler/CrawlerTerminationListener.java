@@ -1,6 +1,6 @@
 package com.merzadyan.crawler;
 
-import com.merzadyan.Stock;
+import com.merzadyan.stock.Stock;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,6 @@
-package com.merzadyan;
+package com.merzadyan.seed;
+
+import com.merzadyan.stock.Stock;
 
 import java.util.Comparator;
 

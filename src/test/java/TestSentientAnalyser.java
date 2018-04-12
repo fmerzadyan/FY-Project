@@ -1,6 +1,6 @@
-import com.merzadyan.SOIRegistry;
-import com.merzadyan.SentientAnalyser;
-import com.merzadyan.Stock;
+import com.merzadyan.stock.SOIRegistry;
+import com.merzadyan.analyser.SentientAnalyser;
+import com.merzadyan.stock.Stock;
 import org.ahocorasick.trie.Trie;
 import org.junit.Assert;
 import org.junit.BeforeClass;
