@@ -626,14 +626,6 @@ public class MainWindow extends Application {
         }
     }
     
-    public void removeSeedUrl() {
-        SeedUrl seedUrl = seedUrlTableView.getSelectionModel().getSelectedItem();
-        if (seedUrl != null) {
-            SeedUrlRegistry.getInstance().remove(seedUrl);
-            seedUrlObservableList.remove(seedUrl);
-        }
-    }
-    
     public void saveConfigs() {
         String interval = (String) processIntervalComboBox.getValue();
         crawlerManager.setInterval(interval);
