@@ -1,6 +1,6 @@
 package com.merzadyan.ui;
 
-import com.merzadyan.Common;
+import com.merzadyan.FileOp;
 import com.merzadyan.stock.DateCategoriser;
 import com.merzadyan.stock.History;
 import com.merzadyan.stock.SOIRegistry;
@@ -341,10 +341,10 @@ public class MainWindow extends Application {
          */
         soiObservableList = FXCollections.observableArrayList();
         
-        if (SOIRegistry.getInstance().getStockSet() != null && SOIRegistry.getInstance().getStockSet().size() != 0) {
-            soiObservableList.addAll(SOIRegistry.getInstance().getStockSet());
+        if (SOIRegistry.getInstance().getSoiSet() != null && SOIRegistry.getInstance().getSoiSet().size() != 0) {
+            soiObservableList.addAll(SOIRegistry.getInstance().getSoiSet());
         } else {
-            LOGGER.fatal("SOIRegistry.getInstance().getStockSet() is null or size is 0.");
+            LOGGER.fatal("SOIRegistry.getInstance().getSoiSet() is null or size is 0.");
         }
         
         companyTblCol.setCellValueFactory(new PropertyValueFactory<>("company"));
@@ -457,11 +457,11 @@ public class MainWindow extends Application {
         
         preselectedStocksComboBox.getItems().clear();
         preselectedStocksComboBox.setCellFactory(stockCellCallback);
-        if (SOIRegistry.getInstance() != null && SOIRegistry.getInstance().getDefaultStockSet() != null &&
-                SOIRegistry.getInstance().getDefaultStockSet().size() != 0) {
-            preselectedStocksComboBox.getItems().addAll(SOIRegistry.getInstance().getDefaultStockSet());
+        if (SOIRegistry.getInstance() != null && SOIRegistry.getInstance().getFtse100Set() != null &&
+                SOIRegistry.getInstance().getFtse100Set().size() != 0) {
+            preselectedStocksComboBox.getItems().addAll(SOIRegistry.getInstance().getFtse100Set());
         } else {
-            LOGGER.fatal("SOIRegistry.getInstance().getDefaultStockSet() is null or size is 0.");
+            LOGGER.fatal("SOIRegistry.getInstance().getFtse100Set() is null or size is 0.");
         }
         
         /*
@@ -542,7 +542,7 @@ public class MainWindow extends Application {
                     for (Stock stock : finalStockResultList) {
                         // Only used to collect the date interval for later use.
                         // To be extra cautious: null checks - should not be the case when these fields are ever null.
-                        if (dummy == null && !Common.isNullOrEmptyString(stock.getCompany()) &&
+                        if (dummy == null && !FileOp.isNullOrEmpty(stock.getCompany()) &&
                                 stock.getStartDate() != null && stock.getEndDate() != null) {
                             dummy = stock;
                             dummy.setCompany(dummy.getCompany().toLowerCase());
@@ -638,7 +638,7 @@ public class MainWindow extends Application {
     public void addSeedUrl() {
         String url = seedUrlTextField.getText().trim().toLowerCase();
         
-        if (Common.isNullOrEmptyString(url)) {
+        if (FileOp.isNullOrEmpty(url)) {
             return;
         }
         
@@ -658,10 +658,10 @@ public class MainWindow extends Application {
         // Guard against null strings.
         String userAgentName = userAgentNameTextField.getText().trim();
         String dataDump = userAgentNameTextField.getText().trim();
-        if (!Common.isNullOrEmptyString(userAgentName)) {
+        if (!FileOp.isNullOrEmpty(userAgentName)) {
             crawlerManager.setUserAgentString(userAgentNameTextField.getText().trim());
         }
-        if (!Common.isNullOrEmptyString(dataDump)) {
+        if (!FileOp.isNullOrEmpty(dataDump)) {
             crawlerManager.setCrawlStorageFolder(dataDumpTextField.getText().trim());
         }
         
@@ -736,8 +736,8 @@ public class MainWindow extends Application {
             String symbol = tickerSymbolTextField.getText().trim().toLowerCase();
             String stockExchange = stockExchangeTextField.getText().trim().toLowerCase();
             
-            if (Common.isNullOrEmptyString(company) || Common.isNullOrEmptyString(symbol) ||
-                    Common.isNullOrEmptyString(stockExchange)) {
+            if (FileOp.isNullOrEmpty(company) || FileOp.isNullOrEmpty(symbol) ||
+                    FileOp.isNullOrEmpty(stockExchange)) {
                 return;
             }
             
@@ -810,11 +810,11 @@ public class MainWindow extends Application {
     }
     
     public void deserialise() {
-        if (!Common.isFile(SERIALISED_FILE_PATH)) {
+        if (!FileOp.isFile(SERIALISED_FILE_PATH)) {
             return;
         }
         
-        if (Common.isEmptyFile(SERIALISED_FILE_PATH)) {
+        if (FileOp.isEmptyFile(SERIALISED_FILE_PATH)) {
             return;
         }
         

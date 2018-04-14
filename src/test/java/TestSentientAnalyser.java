@@ -19,7 +19,7 @@ public class TestSentientAnalyser {
     
     @BeforeClass
     public static void setup() {
-        TreeSet<Stock> stockSet = SOIRegistry.getInstance().getStockSet();
+        TreeSet<Stock> stockSet = SOIRegistry.getInstance().getSoiSet();
         ArrayList<String> companyKeys = new ArrayList<>();
         for (Stock stock : stockSet) {
             if (stock != null) {

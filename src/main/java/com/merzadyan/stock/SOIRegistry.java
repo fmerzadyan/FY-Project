@@ -1,12 +1,15 @@
 package com.merzadyan.stock;
 
-import com.merzadyan.Common;
+import com.merzadyan.FileOp;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.TreeSet;
 
 /**
@@ -17,24 +20,34 @@ public class SOIRegistry {
     
     private static final SOIRegistry instance = new SOIRegistry();
     
-    private TreeSet<Stock> stockSet;
-    private TreeSet<Stock> defaultStockSet;
+    /**
+     * References the location of the file containing the built-in stocks of interest.
+     * The file holds data such as company name and its corresponding ticker symbol in the same row
+     * wherein each field is separated by a % symbol.
+     */
+    public static final String FTSE_100_FILE_PATH =
+            "src\\main\\resources\\dictionary\\ftse-100.txt";
+    /**
+     * References the location of the file containing user-defined stocks of interest.
+     * The file holds data such as company name and its corresponding ticker symbol in the same row
+     * wherein each field is separated by a % symbol.
+     */
+    public static final String SOI_FILE_PATH =
+            "src\\main\\resources\\dictionary\\soi.txt";
     
-    // IMPORTANT NOTE: hard-coded paths - WARNING - will critically fail the app if files do not exist.
-    private static final String DEFAULT_SOI_FILE_PATH = "/C:/Users/fmerzadyan/dev/SPP/target/classes/dictionary/default-soi.txt";
+    private TreeSet<Stock> ftse100Set;
+    private TreeSet<Stock> soiSet;
     
     private SOIRegistry() {
-        stockSet = new TreeSet<>();
-        String soiFilePath = "/C:/Users/fmerzadyan/dev/SPP/target/classes/dictionary/soi.txt";
         try {
-            stockSet = extractStocks(soiFilePath, false);
-        } catch (FileNotFoundException e) {
+            ftse100Set = extractFtse100();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         
         try {
-            defaultStockSet = extractStocks(DEFAULT_SOI_FILE_PATH, true);
-        } catch (FileNotFoundException e) {
+            soiSet = extractSoi();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -43,48 +56,165 @@ public class SOIRegistry {
         return instance;
     }
     
-    private TreeSet<Stock> extractStocks(String soiFilePath, boolean useDefault) throws FileNotFoundException {
-        if (Common.isNullOrEmptyString(soiFilePath)) {
-            throw new FileNotFoundException("Is null or empty: " + soiFilePath);
+    public void createAndPopulateFTSE100File() {
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(FTSE_100_FILE_PATH), "utf-8"))) {
+            LOGGER.debug("Creating and populating file: " + FTSE_100_FILE_PATH);
+            // Create and populate the file with FTSE-100 companies.
+            writer.write("3i % III\n" +
+                    "Admiral Group % ADM\n" +
+                    "Anglo American plc % AAL\n" +
+                    "Antofagasta % ANTO\n" +
+                    "Ashtead Group % AHT\n" +
+                    "Associated British Foods % ABF\n" +
+                    "AstraZeneca % AZN\n" +
+                    "Aviva % AV.\n" +
+                    "BAE Systems  % BA.\n" +
+                    "Barclays % BARC\n" +
+                    "Barratt Developments % BDEV\n" +
+                    "Berkeley Group Holdings % BKG\n" +
+                    "BHP % BLT\n" +
+                    "BP % BP.\n" +
+                    "British American Tobacco % BATS\n" +
+                    "British Land % BLND\n" +
+                    "BT Group % BT.A\n" +
+                    "Bunzl % BNZL\n" +
+                    "Burberry % BRBY\n" +
+                    "Carnival Corporation & plc % CCL\n" +
+                    "Centrica % CNA\n" +
+                    "Coca-Cola HBC AG % CCH\n" +
+                    "Compass Group % CPG\n" +
+                    "CRH plc % CRH\n" +
+                    "Croda International % CRDA\n" +
+                    "DCC plc % DCC\n" +
+                    "Diageo % DGE\n" +
+                    "Direct Line Group % DLG\n" +
+                    "easyJet % EZJ\n" +
+                    "Evraz % EVR\n" +
+                    "Experian % EXPN\n" +
+                    "Ferguson plc % FERG\n" +
+                    "Fresnillo plc % FRES\n" +
+                    "G4S % GFS\n" +
+                    "GKN % GKN\n" +
+                    "GlaxoSmithKline % GSK\n" +
+                    "Glencore % GLEN\n" +
+                    "Halma % HLMA\n" +
+                    "Hammerson % HMSO\n" +
+                    "Hargreaves Lansdown % HL.\n" +
+                    "HSBC % HSBA\n" +
+                    "Imperial Brands % IMB\n" +
+                    "Informa % INF\n" +
+                    "InterContinental Hotels Group % IHG\n" +
+                    "International Airlines Group % IAG\n" +
+                    "Intertek % ITRK\n" +
+                    "ITV plc % ITV\n" +
+                    "Johnson Matthey % JMAT\n" +
+                    "Just Eat % JE.\n" +
+                    "Kingfisher plc % KGF\n" +
+                    "Land Securities % LAND\n" +
+                    "Legal & General % LGEN\n" +
+                    "Lloyds Banking Group % LLOY\n" +
+                    "London Stock Exchange Group % LSE\n" +
+                    "Marks & Spencer % MKS\n" +
+                    "Mediclinic International % MDC\n" +
+                    "Micro Focus % MCRO\n" +
+                    "Mondi % MNDI\n" +
+                    "Morrisons % MRW\n" +
+                    "National Grid plc % NG.\n" +
+                    "Next plc % NXT\n" +
+                    "NMC Health % NMC\n" +
+                    "Old Mutual % OML\n" +
+                    "Paddy Power Betfair % PPB\n" +
+                    "Pearson PLC % PSON\n" +
+                    "Persimmon plc % PSN\n" +
+                    "Prudential plc % PRU\n" +
+                    "Randgold Resources % RRS\n" +
+                    "Reckitt Benckiser % RB.\n" +
+                    "RELX Group % REL\n" +
+                    "Rentokil Initial % RTO\n" +
+                    "Rio Tinto Group % RIO\n" +
+                    "Rolls-Royce Holdings % RR.\n" +
+                    "The Royal Bank of Scotland Group % RBS\n" +
+                    "Royal Dutch Shell % RDSA\n" +
+                    "RSA Insurance Group % RSA\n" +
+                    "Sage Group % SGE\n" +
+                    "Sainsbury's % SBRY\n" +
+                    "Schroders % SDR\n" +
+                    "Scottish Mortgage Investment Trust % SMT\n" +
+                    "Segro % SGRO\n" +
+                    "Severn Trent % SVT\n" +
+                    "Shire plc % SHP\n" +
+                    "Sky plc % SKY\n" +
+                    "Smith & Nephew % SN.\n" +
+                    "Smith, D.S. % SMDS\n" +
+                    "Smiths Group % SMIN\n" +
+                    "Smurfit Kappa % SKG\n" +
+                    "SSE plc % SSE\n" +
+                    "Standard Chartered % STAN\n" +
+                    "Standard Life Aberdeen % SLA\n" +
+                    "St. James's Place plc % STJ\n" +
+                    "Taylor Wimpey % TW.\n" +
+                    "Tesco % TSCO\n" +
+                    "TUI Group % TUI\n" +
+                    "Unilever % ULVR\n" +
+                    "United Utilities % UU.\n" +
+                    "Vodafone Group % VOD\n" +
+                    "Whitbread % WTB\n" +
+                    "WPP plc % WPP");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void createSoiFile() {
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(SOI_FILE_PATH), "utf-8"))) {
+            LOGGER.debug("Creating file: " + SOI_FILE_PATH);
+            // Create an empty file.
+            writer.write("");
+        } catch (IOException e2) {
+            e2.printStackTrace();
+        }
+    }
+    
+    public TreeSet<Stock> extractFtse100() throws IOException {
+        if (!FileOp.isFile(FTSE_100_FILE_PATH) || !FileOp.isEmptyFile(FTSE_100_FILE_PATH)) {
+            createAndPopulateFTSE100File();
         }
         
-        if (!Common.isFile(soiFilePath)) {
-            throw new FileNotFoundException("Is not file: " + soiFilePath);
+        return adapt(FTSE_100_FILE_PATH);
+    }
+    
+    public TreeSet<Stock> extractSoi() throws IOException {
+        // Create the file if it does not exist.
+        if (!FileOp.isFile(SOI_FILE_PATH)) {
+            createSoiFile();
+            // User-defined stock set is allowed to be empty.
+            return new TreeSet<>();
         }
         
-        String filePath = soiFilePath;
-        if (Common.isEmptyFile(filePath) && useDefault) {
-            filePath = DEFAULT_SOI_FILE_PATH;
-        } else if (Common.isEmptyFile(filePath) && !useDefault) {
-            throw new FileNotFoundException("Is not file: " + filePath);
-        }
-        
+        return adapt(SOI_FILE_PATH);
+    }
+    
+    private TreeSet<Stock> adapt(String path) throws IOException {
         TreeSet<Stock> set = new TreeSet<>();
+        FileReader fileReader = new FileReader(path);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+        String line;
         
-        try {
-            FileReader fileReader = new FileReader(filePath);
-            
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                String[] pair = line.split("%");
-                if (pair[0] == null || pair[1] == null) {
-                    // continue to next iteration if format is broken.
-                    continue;
-                }
-                String company = pair[0].trim().toLowerCase();
-                String symbol = pair[1].trim().toLowerCase();
-                // NOTE: since only FTSE-100 companies are listed in soi.txt then all are on LSE.
-                Stock stock = new Stock(company, symbol, "LSE");
-                if (!set.contains(stock)) {
-                    set.add(stock);
-                }
+        while ((line = bufferedReader.readLine()) != null) {
+            String[] pair = line.split("%");
+            if (pair[0] == null || pair[1] == null) {
+                // continue to next iteration if format is broken.
+                continue;
             }
-        } catch (IOException ioEx) {
-            LOGGER.error(ioEx);
+            String company = pair[0].trim().toLowerCase();
+            String symbol = pair[1].trim().toLowerCase();
+            // NOTE: since only FTSE-100 companies are listed in soi.txt then all are on LSE.
+            Stock stock = new Stock(company, symbol, "LSE");
+            // Duplicate entries are disallowed in tree sets by default.
+            set.add(stock);
         }
-        
         return set;
     }
     
@@ -95,9 +225,7 @@ public class SOIRegistry {
      * @param stock
      */
     public void add(Stock stock) {
-        if (!stockSet.contains(stock)) {
-            stockSet.add(stock);
-        }
+        soiSet.add(stock);
     }
     
     /**
@@ -107,16 +235,14 @@ public class SOIRegistry {
      * @param stock
      */
     public void remove(Stock stock) {
-        if (stockSet.contains(stock)) {
-            stockSet.remove(stock);
-        }
+        soiSet.remove(stock);
     }
     
-    public TreeSet<Stock> getStockSet() {
-        return stockSet;
+    public TreeSet<Stock> getSoiSet() {
+        return soiSet;
     }
     
-    public TreeSet<Stock> getDefaultStockSet() {
-        return defaultStockSet;
+    public TreeSet<Stock> getFtse100Set() {
+        return ftse100Set;
     }
 }

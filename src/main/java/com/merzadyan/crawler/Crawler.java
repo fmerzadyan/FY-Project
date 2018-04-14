@@ -89,7 +89,7 @@ public class Crawler extends WebCrawler {
             return;
         }
         
-        TreeSet<Stock> stockSet = soiRegistry.getStockSet();
+        TreeSet<Stock> stockSet = soiRegistry.getSoiSet();
         ArrayList<String> companyKeys = new ArrayList<>();
         for (Stock stock : stockSet) {
             if (stock != null) {

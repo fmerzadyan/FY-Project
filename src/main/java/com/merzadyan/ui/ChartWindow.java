@@ -1,7 +1,7 @@
 package com.merzadyan.ui;
 
 import com.drew.lang.annotations.NotNull;
-import com.merzadyan.Common;
+import com.merzadyan.FileOp;
 import com.merzadyan.stock.Stock;
 import javafx.application.Application;
 import javafx.fxml.FXML;
@@ -62,7 +62,7 @@ public class ChartWindow extends Application {
                 latestStockData = stock;
             }
             
-            if (Common.isNullOrEmptyString(stock.getCompany()) || stock.getStartDate() == null ||
+            if (FileOp.isNullOrEmpty(stock.getCompany()) || stock.getStartDate() == null ||
                     stock.getEndDate() == null) {
                 // Skip iteration if the required values are null.
                 // For precaution - should not be the case that this ever happens.
