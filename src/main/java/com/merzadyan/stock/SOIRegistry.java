@@ -187,7 +187,7 @@ public class SOIRegistry {
     }
     
     public TreeSet<Stock> extractFtse100() throws IOException {
-        if (!FileOp.isFile(FTSE_100_FILE_PATH) || !FileOp.isEmptyFile(FTSE_100_FILE_PATH)) {
+        if (!FileOp.isFile(FTSE_100_FILE_PATH) || FileOp.isEmptyFile(FTSE_100_FILE_PATH)) {
             createAndPopulateFTSE100File();
         }
         
@@ -228,22 +228,22 @@ public class SOIRegistry {
     }
     
     /**
-     * IMPORTANT NOTE: for every time, stocks are "added" on the UI, this method must be called to keep
-     * the the registry in sync with the UI.
+     * IMPORTANT NOTE: for each time when stocks are added via the GUI, call this method keep
+     * the the registry in sync with the UI. Adds the specified element to this set if it is not already present.
      *
      * @param stock
      */
-    public void add(Stock stock) {
+    public synchronized void add(Stock stock) {
         soiSet.add(stock);
     }
     
     /**
-     * IMPORTANT NOTE: for every time, stocks are "removed" on the UI, this method must be called to keep
-     * the the registry in sync with the UI.
+     * IMPORTANT NOTE: for each time when stocks are removed via the GUI, call this method keep
+     *      * the the registry in sync with the UI. Removes the specified element from this set if it is present.
      *
      * @param stock
      */
-    public void remove(Stock stock) {
+    public synchronized void remove(Stock stock) {
         soiSet.remove(stock);
     }
     

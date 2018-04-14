@@ -1,14 +1,14 @@
 package com.merzadyan.ui;
 
 import com.merzadyan.FileOp;
+import com.merzadyan.crawler.CrawlerManager;
+import com.merzadyan.crawler.CrawlerTerminationListener;
+import com.merzadyan.seed.SeedUrl;
+import com.merzadyan.seed.SeedUrlRegistry;
 import com.merzadyan.stock.DateCategoriser;
 import com.merzadyan.stock.History;
 import com.merzadyan.stock.SOIRegistry;
-import com.merzadyan.seed.SeedUrl;
-import com.merzadyan.seed.SeedUrlRegistry;
 import com.merzadyan.stock.Stock;
-import com.merzadyan.crawler.CrawlerManager;
-import com.merzadyan.crawler.CrawlerTerminationListener;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -67,7 +67,7 @@ public class MainWindow extends Application {
     private HashMap<String, ArrayList<Stock>> stocksAsTimeProgresses;
     // finalStockResultList is the result from the last crawl-process which process for one date interval.
     private ArrayList<Stock> finalStockResultList;
-    private static final String SERIALISED_FILE_PATH = "src\\main\\resources\\ser\\History.ser";
+    private static final String SERIALISED_FILE_PATH = "src/main/resources/ser/History.ser";
     
     /**
      * Indicates the current state of the crawlers. True if crawling is currently being performed.
