@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,14 +27,14 @@ public class SOIRegistry {
      * wherein each field is separated by a % symbol.
      */
     public static final String FTSE_100_FILE_PATH =
-            "src\\main\\resources\\dictionary\\ftse-100.txt";
+            "src/main/resources/dictionary/ftse-100.txt";
     /**
      * References the location of the file containing user-defined stocks of interest.
      * The file holds data such as company name and its corresponding ticker symbol in the same row
      * wherein each field is separated by a % symbol.
      */
     public static final String SOI_FILE_PATH =
-            "src\\main\\resources\\dictionary\\soi.txt";
+            "src/main/resources/dictionary/soi.txt";
     
     private TreeSet<Stock> ftse100Set;
     private TreeSet<Stock> soiSet;
@@ -57,6 +58,10 @@ public class SOIRegistry {
     }
     
     public void createAndPopulateFTSE100File() {
+        File intermediateDirs = new File("src/main/resources/dictionary");
+        // Create intermediate directories that are parent directories to the FTSE-100 file.
+        intermediateDirs.mkdirs();
+        
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(FTSE_100_FILE_PATH), "utf-8"))) {
             LOGGER.debug("Creating and populating file: " + FTSE_100_FILE_PATH);
@@ -167,6 +172,10 @@ public class SOIRegistry {
     }
     
     public void createSoiFile() {
+        File intermediateDirs = new File("src/main/resources/dictionary");
+        // Create intermediate directories that are parent directories to the soi file.
+        intermediateDirs.mkdirs();
+        
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(SOI_FILE_PATH), "utf-8"))) {
             LOGGER.debug("Creating file: " + SOI_FILE_PATH);
