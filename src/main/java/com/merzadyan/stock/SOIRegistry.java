@@ -4,6 +4,7 @@ import com.merzadyan.Common;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.TreeSet;
@@ -19,34 +20,43 @@ public class SOIRegistry {
     private TreeSet<Stock> stockSet;
     private TreeSet<Stock> defaultStockSet;
     
-    private static final String DEFAULT_SOI_FILE_PATH = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\dictionary\\default-soi.txt";
+    // IMPORTANT NOTE: hard-coded paths - WARNING - will critically fail the app if files do not exist.
+    private static final String DEFAULT_SOI_FILE_PATH = "/C:/Users/fmerzadyan/dev/SPP/target/classes/dictionary/default-soi.txt";
     
     private SOIRegistry() {
         stockSet = new TreeSet<>();
-        String soiFilePath = "C:\\Users\\fmerzadyan\\OneDrive\\Unispace\\Final Year\\FY Project\\SPP\\src\\main\\resources\\dictionary\\soi.txt";
-        stockSet = extractStocks(soiFilePath, false);
-        defaultStockSet = extractStocks(DEFAULT_SOI_FILE_PATH, true);
+        String soiFilePath = "/C:/Users/fmerzadyan/dev/SPP/target/classes/dictionary/soi.txt";
+        try {
+            stockSet = extractStocks(soiFilePath, false);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         
+        try {
+            defaultStockSet = extractStocks(DEFAULT_SOI_FILE_PATH, true);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
     
     public static SOIRegistry getInstance() {
         return instance;
     }
     
-    private TreeSet<Stock> extractStocks(String soiFilePath, boolean useDefault) {
+    private TreeSet<Stock> extractStocks(String soiFilePath, boolean useDefault) throws FileNotFoundException {
         if (Common.isNullOrEmptyString(soiFilePath)) {
-            return null;
+            throw new FileNotFoundException("Is null or empty: " + soiFilePath);
         }
         
         if (!Common.isFile(soiFilePath)) {
-            return null;
+            throw new FileNotFoundException("Is not file: " + soiFilePath);
         }
         
         String filePath = soiFilePath;
         if (Common.isEmptyFile(filePath) && useDefault) {
             filePath = DEFAULT_SOI_FILE_PATH;
         } else if (Common.isEmptyFile(filePath) && !useDefault) {
-            return null;
+            throw new FileNotFoundException("Is not file: " + filePath);
         }
         
         TreeSet<Stock> set = new TreeSet<>();

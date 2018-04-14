@@ -16,6 +16,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -183,10 +184,11 @@ public class MainWindow extends Application {
     public void start(Stage primaryStage) throws Exception {
         setUserAgentStylesheet(STYLESHEET_MODENA);
         
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(getClass().getResource("/layout/main.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        primaryStage.setScene(scene);
+        // Parent root = FXMLLoader.load(getClass().getResource("/com/merzadyan/ui/main.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/layout/main.fxml"));
+        
+        primaryStage.setScene(new Scene(root));
+        
         // Disable resizing ability of the window.
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -279,7 +281,12 @@ public class MainWindow extends Application {
          * Seed URLs tab.
          */
         seedUrlObservableList = FXCollections.observableArrayList();
-        seedUrlObservableList.addAll(SeedUrlRegistry.getInstance().getUrlSet());
+        if (SeedUrlRegistry.getInstance() != null && SeedUrlRegistry.getInstance().getUrlSet() != null &&
+                SeedUrlRegistry.getInstance().getUrlSet().size() != 0) {
+            seedUrlObservableList.addAll(SeedUrlRegistry.getInstance().getUrlSet());
+        } else {
+            LOGGER.fatal("seedUrlObservableList.addAll(SeedUrlRegistry.getInstance().getUrlSet() is null or size is 0.");
+        }
         urlTblCol.setCellValueFactory(new PropertyValueFactory<>("url"));
         typeTblCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         
@@ -322,6 +329,7 @@ public class MainWindow extends Application {
         seedUrlTableView.setItems(seedUrlObservableList);
         
         seedUrlOptionsComboBox.getItems().clear();
+        // TODO: consider using these options or seed url options combo box.
         seedUrlOptionsComboBox.getItems().addAll(
                 "Use default seed URLs only.",
                 "Use both default and custom seed URLs.",
@@ -332,7 +340,13 @@ public class MainWindow extends Application {
          * SOI Registry tab.
          */
         soiObservableList = FXCollections.observableArrayList();
-        soiObservableList.addAll(SOIRegistry.getInstance().getStockSet());
+        
+        if (SOIRegistry.getInstance().getStockSet() != null && SOIRegistry.getInstance().getStockSet().size() != 0) {
+            soiObservableList.addAll(SOIRegistry.getInstance().getStockSet());
+        } else {
+            LOGGER.fatal("SOIRegistry.getInstance().getStockSet() is null or size is 0.");
+        }
+        
         companyTblCol.setCellValueFactory(new PropertyValueFactory<>("company"));
         symbolTblCol.setCellValueFactory(new PropertyValueFactory<>("symbol"));
         stockExchangeTblCol.setCellValueFactory(new PropertyValueFactory<>("stockExchange"));
@@ -443,15 +457,26 @@ public class MainWindow extends Application {
         
         preselectedStocksComboBox.getItems().clear();
         preselectedStocksComboBox.setCellFactory(stockCellCallback);
-        preselectedStocksComboBox.getItems().addAll(SOIRegistry.getInstance().getDefaultStockSet());
+        if (SOIRegistry.getInstance() != null && SOIRegistry.getInstance().getDefaultStockSet() != null &&
+                SOIRegistry.getInstance().getDefaultStockSet().size() != 0) {
+            preselectedStocksComboBox.getItems().addAll(SOIRegistry.getInstance().getDefaultStockSet());
+        } else {
+            LOGGER.fatal("SOIRegistry.getInstance().getDefaultStockSet() is null or size is 0.");
+        }
         
         /*
          * Config tab.
          */
         processIntervalComboBox.getItems().clear();
-        processIntervalComboBox.getItems().addAll(
-                new DateCategoriser(null).extractIntervals()
-        );
+        
+        String[] intervals = new DateCategoriser(null).extractIntervals();
+        if (intervals != null && intervals.length != 0) {
+            processIntervalComboBox.getItems().addAll(
+                    new DateCategoriser(null).extractIntervals()
+            );
+        } else {
+            LOGGER.fatal("new DateCategoriser(null).extractIntervals() is null or length is 0.");
+        }
         
         userAgentNameTextField.setText(crawlerManager.getUserAgentString());
         dataDumpTextField.setText(crawlerManager.getCrawlStorageFolder());
