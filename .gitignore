@@ -137,3 +137,5 @@ src/main/java/com/merzadyan/Test\.java
 *.ser
 
 \.idea/inspectionProfiles/
+
+src/main/resources/dictionary/ftse-100\.txt

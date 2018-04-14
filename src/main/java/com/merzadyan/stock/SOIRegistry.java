@@ -6,9 +6,12 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.TreeSet;
@@ -28,16 +31,16 @@ public class SOIRegistry {
      */
     public static final String FTSE_100_FILE_PATH =
             "src/main/resources/dictionary/ftse-100.txt";
+    public static final String SERIALISED_DIR = "src/main/resources/ser";
     /**
-     * References the location of the file containing user-defined stocks of interest.
-     * The file holds data such as company name and its corresponding ticker symbol in the same row
-     * wherein each field is separated by a % symbol.
+     * References the location of the serialised file containing user-defined stocks of interest.
+     * The file holds Stock objects.
      */
-    public static final String SOI_FILE_PATH =
-            "src/main/resources/dictionary/soi.txt";
+    public static final String SERIALISED_SOI_FILE_PATH = SERIALISED_DIR + "/box.ser";
+    
+    private Box box;
     
     private TreeSet<Stock> ftse100Set;
-    private TreeSet<Stock> soiSet;
     
     private SOIRegistry() {
         try {
@@ -46,10 +49,17 @@ public class SOIRegistry {
             e.printStackTrace();
         }
         
+        box = new Box();
+        
+        if (!new File(SERIALISED_DIR).isDirectory()) {
+            File intermediateDirs = new File(SERIALISED_DIR);
+            intermediateDirs.mkdirs();
+        }
+        
         try {
-            soiSet = extractSoi();
-        } catch (IOException e) {
-            e.printStackTrace();
+            deserialise();
+        } catch (Exception e) {
+            LOGGER.debug(e);
         }
     }
     
@@ -171,38 +181,12 @@ public class SOIRegistry {
         }
     }
     
-    public void createSoiFile() {
-        File intermediateDirs = new File("src/main/resources/dictionary");
-        // Create intermediate directories that are parent directories to the soi file.
-        intermediateDirs.mkdirs();
-        
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(SOI_FILE_PATH), "utf-8"))) {
-            LOGGER.debug("Creating file: " + SOI_FILE_PATH);
-            // Create an empty file.
-            writer.write("");
-        } catch (IOException e2) {
-            e2.printStackTrace();
-        }
-    }
-    
     public TreeSet<Stock> extractFtse100() throws IOException {
         if (!FileOp.isFile(FTSE_100_FILE_PATH) || FileOp.isEmptyFile(FTSE_100_FILE_PATH)) {
             createAndPopulateFTSE100File();
         }
         
         return adapt(FTSE_100_FILE_PATH);
-    }
-    
-    public TreeSet<Stock> extractSoi() throws IOException {
-        // Create the file if it does not exist.
-        if (!FileOp.isFile(SOI_FILE_PATH)) {
-            createSoiFile();
-            // User-defined stock set is allowed to be empty.
-            return new TreeSet<>();
-        }
-        
-        return adapt(SOI_FILE_PATH);
     }
     
     private TreeSet<Stock> adapt(String path) throws IOException {
@@ -234,24 +218,94 @@ public class SOIRegistry {
      * @param stock
      */
     public synchronized void add(Stock stock) {
-        soiSet.add(stock);
+        boolean isAdded = box.set.add(stock);
+        if (isAdded) {
+            serialise(box.set);
+        }
     }
     
     /**
      * IMPORTANT NOTE: for each time when stocks are removed via the GUI, call this method keep
-     *      * the the registry in sync with the UI. Removes the specified element from this set if it is present.
+     * * the the registry in sync with the UI. Removes the specified element from this set if it is present.
      *
      * @param stock
      */
     public synchronized void remove(Stock stock) {
-        soiSet.remove(stock);
+        boolean isRemoved = box.set.remove(stock);
+        if (isRemoved) {
+            serialise(box.set);
+        }
     }
     
     public TreeSet<Stock> getSoiSet() {
-        return soiSet;
+        return box.set;
     }
     
     public TreeSet<Stock> getFtse100Set() {
         return ftse100Set;
+    }
+    
+    private void serialise(TreeSet<Stock> set) {
+        FileOutputStream fileOutputStream = null;
+        ObjectOutputStream objectOutputStream = null;
+        
+        try {
+            fileOutputStream = new FileOutputStream(SOIRegistry.SERIALISED_SOI_FILE_PATH);
+            objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            Box box = new Box();
+            box.set.addAll(set);
+            objectOutputStream.writeObject(box);
+            LOGGER.debug("Wrote object in.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            if (objectOutputStream != null) {
+                try {
+                    objectOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    private void deserialise() {
+        FileInputStream fileInputStream = null;
+        ObjectInputStream objectInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(SOIRegistry.SERIALISED_SOI_FILE_PATH);
+            objectInputStream = new ObjectInputStream(fileInputStream);
+            Box box = (Box) objectInputStream.readObject();
+            if (box != null && box.set != null && !box.set.isEmpty()) {
+                this.box.set.addAll(box.set);
+            }
+            LOGGER.debug("Read object out.");
+        } catch (Exception e) {
+            // e.printStackTrace();
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            if (objectInputStream != null) {
+                try {
+                    objectInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
