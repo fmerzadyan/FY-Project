@@ -1,6 +1,5 @@
 import com.merzadyan.FileOp;
 import com.merzadyan.stock.SOIRegistry;
-import com.merzadyan.stock.Stock;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,23 +33,5 @@ public class TestSOIRegistry {
         // FTSE-100 file should not be null or empty as it is created and populated
         // if the file is non-existent or empty on object construction.
         Assert.assertFalse(ftse100Set.isEmpty());
-    }
-    
-    @Test
-    public void soiSetShouldNotBeEmptyAfterAdding() {
-        Stock stock = new Stock("3i", "III", "LSE");
-        SOIRegistry registry = SOIRegistry.getInstance();
-        Assert.assertFalse(registry.getSoiSet().contains(stock));
-        registry.add(stock);
-        Assert.assertTrue(registry.getSoiSet().contains(stock));
-    }
-    
-    @Test
-    public void soiSetShouldNotContainStockAfterRemoving() {
-        Stock stock = new Stock("3i", "III", "LSE");
-        SOIRegistry registry = SOIRegistry.getInstance();
-        Assert.assertTrue(registry.getSoiSet().contains(stock));
-        registry.remove(stock);
-        Assert.assertFalse(registry.getSoiSet().contains(stock));
     }
 }

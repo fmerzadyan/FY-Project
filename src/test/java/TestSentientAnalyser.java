@@ -1,7 +1,6 @@
 import com.merzadyan.analyser.SentientAnalyser;
 import com.merzadyan.stock.Stock;
 import org.ahocorasick.trie.Trie;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -9,13 +8,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
-/**
- * IMPORTANT NOTE: pass/fail results are dependent on soi.txt contents. If the organisation is not in soi.txt
- * and soi.txt is not empty then it will return false even if the input text has an organisation. which otherwise,
- * that would pass the test.
- */
 public class TestSentientAnalyser {
-    private static final Logger l = Logger.getLogger(TestSentientAnalyser.class.getName());
     private static Trie trie;
     
     @BeforeClass
@@ -103,20 +96,5 @@ public class TestSentientAnalyser {
         }
         
         Assert.assertEquals("2018-03-03", date);
-    }
-    
-    @Test
-    public void sentimentShouldBeNegative() {
-        // TODO
-    }
-    
-    @Test
-    public void sentimentShouldBeNeutral() {
-        // TODO
-    }
-    
-    @Test
-    public void sentimentShouldBePositive() {
-        // TODO
     }
 }

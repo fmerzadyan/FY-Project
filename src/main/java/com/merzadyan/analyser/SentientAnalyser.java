@@ -196,9 +196,7 @@ public class SentientAnalyser {
         }
         
         for (String entity : organisations) {
-            LOGGER.debug("entity: " + entity);
             if (trie.containsMatch(entity)) {
-                LOGGER.debug("matched: " + entity);
                 return entity;
             }
         }
