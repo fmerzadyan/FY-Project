@@ -7,7 +7,7 @@ public class TestAhoCorasickAlgorithm {
     private Trie trie;
     
     @Before
-    public void before() {
+    public void beforeTest() {
         String[] keywords = new String[]{
                 "Barclays",
                 "GlaxoSmithKline",

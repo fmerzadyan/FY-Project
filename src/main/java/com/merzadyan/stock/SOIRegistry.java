@@ -49,15 +49,16 @@ public class SOIRegistry {
             e.printStackTrace();
         }
         
-        box = new Box();
-        
         if (!new File(SERIALISED_DIR).isDirectory()) {
             File intermediateDirs = new File(SERIALISED_DIR);
             intermediateDirs.mkdirs();
         }
         
         try {
-            deserialise();
+            box = deserialise();
+            if (box == null) {
+                box = new Box();
+            }
         } catch (Exception e) {
             LOGGER.debug(e);
         }
@@ -281,8 +282,8 @@ public class SOIRegistry {
         }
     }
     
-    private void deserialise() {
-        box = deserialise(SERIALISED_SOI_FILE_PATH);
+    private Box deserialise() {
+        return deserialise(SERIALISED_SOI_FILE_PATH);
     }
     
     public static Box deserialise(final String SERIALISED_SOI_FILE_PATH) {

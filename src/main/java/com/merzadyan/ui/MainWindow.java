@@ -68,7 +68,7 @@ public class MainWindow extends Application {
     // finalStockResultList is the result from the last crawl-process which process for one date interval.
     private ArrayList<Stock> finalStockResultList;
     private static final String IMMEDIATE_DIR = "src/main/resources/ser";
-    private static final String SERIALISED_FILE_PATH = IMMEDIATE_DIR + "/History.ser";
+    private static final String SERIALISED_FILE_PATH = IMMEDIATE_DIR + "/history.ser";
     
     /**
      * Indicates the current state of the crawlers. True if crawling is currently being performed.
@@ -277,7 +277,10 @@ public class MainWindow extends Application {
         stocksAsTimeProgresses = new HashMap<>();
         finalStockResultList = new ArrayList<>();
         // Restore last saved state.
-        deserialise();
+        stocksAsTimeProgresses = deserialise();
+        if (stocksAsTimeProgresses == null) {
+            stocksAsTimeProgresses = new HashMap<>();
+        }
         
         /*
          * Seed URLs tab.
@@ -811,8 +814,8 @@ public class MainWindow extends Application {
         }
     }
     
-    private void deserialise() {
-        deserialise(SERIALISED_FILE_PATH);
+    private HashMap<String, ArrayList<Stock>> deserialise() {
+        return deserialise(SERIALISED_FILE_PATH);
     }
     
     // Method is static and dependency injectable to be reusable in the JUnit test.
@@ -856,7 +859,7 @@ public class MainWindow extends Application {
         return null;
     }
     
-    public void serialise() {
+    private void serialise() {
         serialise(stocksAsTimeProgresses, SERIALISED_FILE_PATH);
     }
     
