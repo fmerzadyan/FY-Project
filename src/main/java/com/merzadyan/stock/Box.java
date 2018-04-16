@@ -9,7 +9,7 @@ import java.util.TreeSet;
 public class Box implements Serializable {
     public TreeSet<Stock> set;
     
-    Box() {
+    public Box() {
         set = new TreeSet<>();
     }
 }

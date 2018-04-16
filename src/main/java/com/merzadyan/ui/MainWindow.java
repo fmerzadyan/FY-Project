@@ -812,12 +812,11 @@ public class MainWindow extends Application {
     }
     
     private void deserialise() {
-        deserialise(stocksAsTimeProgresses, SERIALISED_FILE_PATH);
+        deserialise(SERIALISED_FILE_PATH);
     }
     
     // Method is static and dependency injectable to be reusable in the JUnit test.
-    public static HashMap<String, ArrayList<Stock>> deserialise(HashMap<String, ArrayList<Stock>> stocksAsTimeProgresses,
-                                   final String SERIALISED_FILE_PATH) {
+    public static HashMap<String, ArrayList<Stock>> deserialise(final String SERIALISED_FILE_PATH) {
         if (!FileOp.isFile(SERIALISED_FILE_PATH)) {
             return null;
         }
@@ -833,8 +832,7 @@ public class MainWindow extends Application {
             objectInputStream = new ObjectInputStream(fileInputStream);
             History history = (History) objectInputStream.readObject();
             if (history != null && history.getLastSaved() != null && history.getLastSaved().size() > 0) {
-                stocksAsTimeProgresses = history.getLastSaved();
-                return stocksAsTimeProgresses;
+                return history.getLastSaved();
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -55,7 +55,7 @@ public class TestHistory {
     
     @Test
     public void shouldNotContainStockAfterInitialisation() {
-        HashMap<String, ArrayList<Stock>> lastSaved = history.getLastSaved();
+        lastSaved = history.getLastSaved();
         Assert.assertFalse(lastSaved.containsKey(stock.getCompany()));
         Assert.assertFalse(lastSaved.containsValue(list));
     }
@@ -92,7 +92,7 @@ public class TestHistory {
         // Mock app shutdown by resetting the hash map.
         lastSaved = new HashMap<>();
         
-        lastSaved = MainWindow.deserialise(lastSaved, SERIALISED_FILE_PATH);
+        lastSaved = MainWindow.deserialise(SERIALISED_FILE_PATH);
         Assert.assertTrue(lastSaved.containsKey(stock.getCompany()));
         Assert.assertTrue(lastSaved.containsValue(list));
     }

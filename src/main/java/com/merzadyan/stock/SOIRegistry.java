@@ -246,11 +246,15 @@ public class SOIRegistry {
     }
     
     private void serialise(TreeSet<Stock> set) {
+        serialise(set, SERIALISED_SOI_FILE_PATH);
+    }
+    
+    public static void serialise(TreeSet<Stock> set, final String SERIALISED_SOI_FILE_PATH) {
         FileOutputStream fileOutputStream = null;
         ObjectOutputStream objectOutputStream = null;
         
         try {
-            fileOutputStream = new FileOutputStream(SOIRegistry.SERIALISED_SOI_FILE_PATH);
+            fileOutputStream = new FileOutputStream(SERIALISED_SOI_FILE_PATH);
             objectOutputStream = new ObjectOutputStream(fileOutputStream);
             Box box = new Box();
             box.set.addAll(set);
@@ -278,16 +282,18 @@ public class SOIRegistry {
     }
     
     private void deserialise() {
+        box = deserialise(SERIALISED_SOI_FILE_PATH);
+    }
+    
+    public static Box deserialise(final String SERIALISED_SOI_FILE_PATH) {
         FileInputStream fileInputStream = null;
         ObjectInputStream objectInputStream = null;
         try {
-            fileInputStream = new FileInputStream(SOIRegistry.SERIALISED_SOI_FILE_PATH);
+            fileInputStream = new FileInputStream(SERIALISED_SOI_FILE_PATH);
             objectInputStream = new ObjectInputStream(fileInputStream);
             Box box = (Box) objectInputStream.readObject();
-            if (box != null && box.set != null && !box.set.isEmpty()) {
-                this.box.set.addAll(box.set);
-            }
             LOGGER.debug("Read object out.");
+            return box;
         } catch (Exception e) {
             // e.printStackTrace();
         } finally {
@@ -307,5 +313,6 @@ public class SOIRegistry {
                 }
             }
         }
+        return null;
     }
 }
