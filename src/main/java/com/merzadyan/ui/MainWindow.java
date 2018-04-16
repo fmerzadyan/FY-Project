@@ -67,7 +67,8 @@ public class MainWindow extends Application {
     private HashMap<String, ArrayList<Stock>> stocksAsTimeProgresses;
     // finalStockResultList is the result from the last crawl-process which process for one date interval.
     private ArrayList<Stock> finalStockResultList;
-    private static final String SERIALISED_FILE_PATH = "src/main/resources/ser/History.ser";
+    private static final String IMMEDIATE_DIR = "src/main/resources/ser";
+    private static final String SERIALISED_FILE_PATH = IMMEDIATE_DIR + "/History.ser";
     
     /**
      * Indicates the current state of the crawlers. True if crawling is currently being performed.
@@ -191,6 +192,7 @@ public class MainWindow extends Application {
         
         // Disable resizing ability of the window.
         primaryStage.setResizable(false);
+        primaryStage.setAlwaysOnTop(true);
         primaryStage.show();
         
         // primaryStage.setAlwaysOnTop(true);
@@ -809,17 +811,19 @@ public class MainWindow extends Application {
         }
     }
     
-    public void deserialise() {
+    private void deserialise() {
+        deserialise(stocksAsTimeProgresses, SERIALISED_FILE_PATH);
+    }
+    
+    // Method is static and dependency injectable to be reusable in the JUnit test.
+    public static HashMap<String, ArrayList<Stock>> deserialise(HashMap<String, ArrayList<Stock>> stocksAsTimeProgresses,
+                                   final String SERIALISED_FILE_PATH) {
         if (!FileOp.isFile(SERIALISED_FILE_PATH)) {
-            return;
+            return null;
         }
         
         if (FileOp.isEmptyFile(SERIALISED_FILE_PATH)) {
-            return;
-        }
-        
-        if (stocksAsTimeProgresses == null) {
-            stocksAsTimeProgresses = new HashMap<>();
+            return null;
         }
         
         FileInputStream fileInputStream = null;
@@ -830,6 +834,7 @@ public class MainWindow extends Application {
             History history = (History) objectInputStream.readObject();
             if (history != null && history.getLastSaved() != null && history.getLastSaved().size() > 0) {
                 stocksAsTimeProgresses = history.getLastSaved();
+                return stocksAsTimeProgresses;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -850,13 +855,23 @@ public class MainWindow extends Application {
                 }
             }
         }
+        return null;
     }
     
     public void serialise() {
+        serialise(stocksAsTimeProgresses, SERIALISED_FILE_PATH);
+    }
+    
+    // Method is static and dependency injectable to be reusable in the JUnit test.
+    public static void serialise(HashMap<String, ArrayList<Stock>> stocksAsTimeProgresses,
+                                 final String SERIALISED_FILE_PATH) {
         // No need to serialise if the stocksAsTimeProgresses is null or empty.
         if (stocksAsTimeProgresses == null || stocksAsTimeProgresses.size() == 0) {
             return;
         }
+        
+        File immediateDirs = new File(IMMEDIATE_DIR);
+        immediateDirs.mkdirs();
         
         FileOutputStream fileOutputStream = null;
         ObjectOutputStream objectOutputStream = null;
