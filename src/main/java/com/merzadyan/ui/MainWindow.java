@@ -553,7 +553,7 @@ public class MainWindow extends Application {
                             dummy = stock;
                             dummy.setCompany(dummy.getCompany().toLowerCase());
                         }
-                        
+                        LOGGER.debug("#non-UI thread: all crawlers are terminated.");
                         String out = ("Stock: " + stock.getCompany()) +
                                 " Sentiment Score: " + stock.getLatestSentimentScore() +
                                 " Histogram: " + Arrays.toString(stock.getHistogram()) +
@@ -857,6 +857,7 @@ public class MainWindow extends Application {
             objectInputStream = new ObjectInputStream(fileInputStream);
             History history = (History) objectInputStream.readObject();
             if (history != null && history.getLastSaved() != null && history.getLastSaved().size() > 0) {
+                LOGGER.debug("#deserialise: read object out.");
                 return history.getLastSaved();
             }
         } catch (Exception e) {
@@ -905,6 +906,7 @@ public class MainWindow extends Application {
             History history = new History();
             history.setLastSaved(stocksAsTimeProgresses);
             objectOutputStream.writeObject(history);
+            LOGGER.debug("serialise: wrote object in.");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

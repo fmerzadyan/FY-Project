@@ -260,7 +260,7 @@ public class SOIRegistry {
             Box box = new Box();
             box.set.addAll(set);
             objectOutputStream.writeObject(box);
-            LOGGER.debug("Wrote object in.");
+            LOGGER.debug("#serialise: wrote object in.");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -293,7 +293,7 @@ public class SOIRegistry {
             fileInputStream = new FileInputStream(SERIALISED_SOI_FILE_PATH);
             objectInputStream = new ObjectInputStream(fileInputStream);
             Box box = (Box) objectInputStream.readObject();
-            LOGGER.debug("Read object out.");
+            LOGGER.debug("#deserialise: read object out.");
             return box;
         } catch (Exception e) {
             // e.printStackTrace();
