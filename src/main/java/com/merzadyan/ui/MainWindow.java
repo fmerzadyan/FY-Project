@@ -494,7 +494,6 @@ public class MainWindow extends Application {
         
         testModeComboBox.getItems().clear();
         testModeComboBox.getItems().addAll(
-                CrawlerManager.MODE.TEST_MODE_SIMPLE,
                 CrawlerManager.MODE.TEST_MODE_COMPLEX
         );
         

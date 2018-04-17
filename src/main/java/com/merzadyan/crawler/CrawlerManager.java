@@ -48,7 +48,6 @@ public class CrawlerManager {
      * IMPORTANT MODE: for testing, debugging and presentation purposes.
      */
     public static class MODE {
-        public static final String TEST_MODE_SIMPLE = "TEST_MODE_SIMPLE";
         public static final String TEST_MODE_COMPLEX = "TEST_MODE_COMPLEX";
     }
     
@@ -135,10 +134,6 @@ public class CrawlerManager {
         if (test && testMode != null && !testMode.isEmpty()) {
             LOGGER.debug("Test mode: " + testMode);
             switch (testMode) {
-                case MODE.TEST_MODE_SIMPLE:
-                    LOGGER.debug("Adding " + SeedUrlRegistry.TEST_MODE_SIMPLE_URL + " as a seed url.");
-                    controller.addSeed(SeedUrlRegistry.TEST_MODE_SIMPLE_URL);
-                    break;
                 case MODE.TEST_MODE_COMPLEX:
                     LOGGER.debug("Adding " + SeedUrlRegistry.TEST_MODE_COMPLEX_URL + " as a seed url.");
                     controller.addSeed(SeedUrlRegistry.TEST_MODE_COMPLEX_URL);
