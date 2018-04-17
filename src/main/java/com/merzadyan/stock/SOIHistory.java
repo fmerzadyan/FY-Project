@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class History implements Serializable {
+public class SOIHistory implements Serializable {
     private HashMap<String, ArrayList<Stock>> lastSaved = new HashMap<>();
     
-    public History() {
+    public SOIHistory() {
     
     }
     

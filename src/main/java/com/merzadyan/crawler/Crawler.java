@@ -24,7 +24,8 @@ import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.compile;
 
-public class Crawler extends WebCrawler {
+// TODO: add a max breadth crawl limit too...
+class Crawler extends WebCrawler {
     private static final Logger LOGGER = Logger.getLogger(Crawler.class.getName());
     
     private int linksVisited;
@@ -35,6 +36,7 @@ public class Crawler extends WebCrawler {
     
     private LocalDate startDate,
             endDate;
+    private int maxCrawledPages;
     
     private CrawlerTerminationListener terminationListener;
     
@@ -43,13 +45,14 @@ public class Crawler extends WebCrawler {
      */
     private static final Pattern FILTERS = constructPattern();
     
-    Crawler(CrawlerTerminationListener terminationListener, LocalDate startDate, LocalDate endDate) {
-        if (startDate == null || endDate == null) {
+    Crawler(CrawlerTerminationListener terminationListener, Configs configs) {
+        if (configs.getStartDate() == null || configs.getEndDate() == null) {
             LOGGER.error("Start date and/or end date is not specified.");
             return;
         }
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this.startDate = configs.getStartDate();
+        this.endDate = configs.getEndDate();
+        this.maxCrawledPages = configs.getMaxCrawledPages();
         this.terminationListener = terminationListener;
         linksVisited = 0;
         soiScoreMap = new HashMap<>();
@@ -115,7 +118,7 @@ public class Crawler extends WebCrawler {
      * the given url should be crawled or not (based on your crawling logic).
      * In this example, we are instructing the crawler to ignore urls that
      * have css, js, git, ... extensions and to only accept urls that start
-     * with "http://www.ics.uci.edu/". In this case, we didn"t need the
+     * with "http://www.ics.uci.edu/". In this case, we didn't need the
      * referringPage parameter to make the decision.
      */
     @Override
@@ -156,6 +159,11 @@ public class Crawler extends WebCrawler {
      */
     @Override
     public void visit(Page page) {
+        if (linksVisited >= maxCrawledPages) {
+            onBeforeExit();
+            LOGGER.debug("linksVisited >= maxCrawledPages...after");
+        }
+        
         String url = page.getWebURL().getURL();
         // ++linksVisited has a prefix operation - increment variable and get value.
         LOGGER.debug("#visit: links visited: " + ++linksVisited + " URL: " + url);
@@ -292,8 +300,6 @@ public class Crawler extends WebCrawler {
     /**
      * Publishes the results of web crawl to listeners. The map holds stocks with a sentiment score
      * property indicating future performance based on current affairs.
-     *
-     * @param map
      */
     private void publish(HashMap<Stock, ArrayList<Integer>> map) {
         if (terminationListener != null) {

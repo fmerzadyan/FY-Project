@@ -14,9 +14,9 @@ import java.time.LocalDate;
 import java.util.HashSet;
 
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_CRAWL_STORAGE_FOLDER;
-import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_INCLUDE_HTTPS_PAGES;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_INTERVAL;
+import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_MAX_CRAWLED_PAGES;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_MAX_DEPTH_OF_CRAWLING;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_NUMBER_OF_CRAWLERS;
 import static com.merzadyan.crawler.CrawlerManager.DEFAULT.DEFAULT_POLITENESS_DELAY;
@@ -30,17 +30,19 @@ public class CrawlerManager {
     public static class DEFAULT {
         public static final String DEFAULT_INTERVAL = new DateCategoriser(null).extractIntervals()[0];
         public static final String DEFAULT_USER_AGENT_STRING = "crawler4j (https://github.com/yasserg/crawler4j/)";
-        public static final String DEFAULT_CRAWL_STORAGE_FOLDER = "/Users/fmerzadyan/data/crawler4j/";
+        // user.home returns the user's home directory on Windows using backslashes - to maintain pattern, \\ are used
+        // in the appending string.
+        public static final String DEFAULT_CRAWL_STORAGE_FOLDER = System.getProperty("user.home") +"\\data\\crawler4j";
         
         public static final int DEFAULT_NUMBER_OF_CRAWLERS = 8;
         public static final int DEFAULT_MAX_DEPTH_OF_CRAWLING = 50;
+        public static final int DEFAULT_MAX_CRAWLED_PAGES = 1000;
         public static final int DEFAULT_POLITENESS_DELAY = 200;
         
-        public static final boolean DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING = false;
         public static final boolean DEFAULT_INCLUDE_HTTPS_PAGES = true;
         public static final boolean DEFAULT_RESUMABLE_CRAWLING = false;
-        
-        public static final boolean DEFAULT_TEST = true;
+        // IMPORTANT: enable/disable in-testing feature.
+        public static final boolean DEFAULT_TEST = false;
         public static final String DEFAULT_TEST_MODE = MODE.TEST_MODE_COMPLEX;
     }
     
@@ -53,13 +55,13 @@ public class CrawlerManager {
     
     private static final Logger LOGGER = Logger.getLogger(CrawlerManager.class.getName());
     
-    private CrawlConfig crawlConfig;
+    private final CrawlConfig crawlConfig;
     
     private CrawlController controller;
-    private CrawlerFactory crawlerFactory;
+    private final CrawlerFactory crawlerFactory;
+    private final Configs configs;
     
     private SeedUrl.Option seedUrlOption;
-    private HashSet<String> seedUrlSet;
     private boolean test;
     private String testMode;
     
@@ -69,28 +71,26 @@ public class CrawlerManager {
     
     private int numberOfCrawlers;
     private int maxDepthOfCrawling;
+    private int maxCrawledPages;
     private int politenessDelay;
     
     private boolean includeHttpsPages;
-    private boolean includeBinaryContentInCrawling;
     private boolean resumableCrawling;
     
     public CrawlerManager(CrawlerTerminationListener terminationListener) {
         crawlConfig = new CrawlConfig();
+        configs = new Configs(null, null, DEFAULT_MAX_CRAWLED_PAGES);
+        crawlerFactory = new CrawlerFactory(terminationListener, configs);
         
-        crawlerFactory = new CrawlerFactory(terminationListener, null, null);
-        
-        seedUrlSet = new HashSet<>();
         interval = DEFAULT_INTERVAL;
         userAgentString = DEFAULT_USER_AGENT_STRING;
-        // Data dump is located in C:\Users\fmerzadyan\data\crawler4j.
         crawlStorageFolder = DEFAULT_CRAWL_STORAGE_FOLDER;
         
         numberOfCrawlers = DEFAULT_NUMBER_OF_CRAWLERS;
         maxDepthOfCrawling = DEFAULT_MAX_DEPTH_OF_CRAWLING;
+        maxCrawledPages = DEFAULT_MAX_CRAWLED_PAGES;
         politenessDelay = DEFAULT_POLITENESS_DELAY;
         
-        includeBinaryContentInCrawling = DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING;
         includeHttpsPages = DEFAULT_INCLUDE_HTTPS_PAGES;
         resumableCrawling = DEFAULT_RESUMABLE_CRAWLING;
         
@@ -98,12 +98,13 @@ public class CrawlerManager {
         testMode = DEFAULT_TEST_MODE;
     }
     
-    public void startNonBlockingCrawl() throws Exception {
+    public void startNonBlockingCrawl() {
         String[] intervalParts = interval.split(DateCategoriser.INTERVAL_DELIMITER);
         LocalDate startDate = LocalDate.parse(intervalParts[0].trim()),
                 endDate = LocalDate.parse(intervalParts[1].trim());
-        crawlerFactory.setStartDate(startDate);
-        crawlerFactory.setEndDate(endDate);
+        configs.setStartDate(startDate);
+        configs.setEndDate(endDate);
+        configs.setMaxCrawledPages(maxCrawledPages);
         
         crawlConfig.setCrawlStorageFolder(crawlStorageFolder);
         // Max depth of crawling is set to infinite depth by default
@@ -113,8 +114,6 @@ public class CrawlerManager {
         crawlConfig.setIncludeHttpsPages(includeHttpsPages);
         // Politeness delay is set to 200 milliseconds by default.
         crawlConfig.setPolitenessDelay(politenessDelay);
-        // Including binary content is set to false by default.
-        crawlConfig.setIncludeBinaryContentInCrawling(includeBinaryContentInCrawling);
         // Resumable crawling continue crawling in the event of crawler process timing out.
         // Resumable crawling is set to false by default.
         // since would not have to delete the data dump for fresh run of program.
@@ -129,7 +128,13 @@ public class CrawlerManager {
         PageFetcher pageFetcher = new PageFetcher(crawlConfig);
         RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
         RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
-        controller = new CrawlController(crawlConfig, pageFetcher, robotstxtServer);
+        try {
+            controller = new CrawlController(crawlConfig, pageFetcher, robotstxtServer);
+        } catch (Exception e) {
+            LOGGER.fatal("The crawlers configuration is incorrect. The problem may be due to the data dump location.");
+            e.printStackTrace();
+            return;
+        }
         
         if (test && testMode != null && !testMode.isEmpty()) {
             LOGGER.debug("Test mode: " + testMode);
@@ -153,6 +158,13 @@ public class CrawlerManager {
                     break;
             }
         } else {
+            if (seedUrlOption == null) {
+                // NOTE HACK: in case that seed url option is not set - use default option.
+                seedUrlOption = SeedUrl.Option.DEFAULT_ONLY;
+            }
+            
+            LOGGER.debug("#startNonBlockingCrawl: seed URL option: " + seedUrlOption);
+            
             for (SeedUrl url : SeedUrlRegistry.getInstance().getUrlSet()) {
                 switch (seedUrlOption) {
                     case DEFAULT_ONLY:
@@ -187,7 +199,6 @@ public class CrawlerManager {
                 " max depth of crawling: " + maxDepthOfCrawling + "\n" +
                 " politeness delay (ms): " + politenessDelay + "\n" +
                 " include HTTPs pages: " + includeHttpsPages + "\n" +
-                " include binary content crawling: " + includeBinaryContentInCrawling + "\n" +
                 " resumable crawling: " + resumableCrawling + "\n" +
                 " enable test mode: " + test + "\n" +
                 " test mode: " + testMode + "\n"
@@ -212,61 +223,8 @@ public class CrawlerManager {
         this.seedUrlOption = seedUrlOption;
     }
     
-    public SeedUrl.Option getSeedUrlOption() {
-        return seedUrlOption;
-    }
-    
-    public void addSeedUrl(String seedUrl) {
-        seedUrlSet.add(seedUrl);
-    }
-    
-    public boolean removeSeedUrl(String seedUrl) {
-        return seedUrlSet != null && seedUrlSet.contains(seedUrl) && seedUrlSet.remove(seedUrl);
-        
-    }
-    
-    public CrawlConfig getCrawlConfig() {
-        return crawlConfig;
-    }
-    
-    public void setCrawlConfig(CrawlConfig crawlConfig) {
-        this.crawlConfig = crawlConfig;
-    }
-    
-    public CrawlController getController() {
-        return controller;
-    }
-    
-    public void setController(CrawlController controller) {
-        this.controller = controller;
-    }
-    
-    public CrawlerFactory getCrawlerFactory() {
-        return crawlerFactory;
-    }
-    
-    public void setCrawlerFactory(CrawlerFactory crawlerFactory) {
-        this.crawlerFactory = crawlerFactory;
-    }
-    
-    public void setSeedUrlSet(HashSet<String> seedUrlSet) {
-        this.seedUrlSet = seedUrlSet;
-    }
-    
-    public HashSet<String> getSeedUrlSet() {
-        return seedUrlSet;
-    }
-    
-    public boolean isTest() {
-        return test;
-    }
-    
     public void setTest(boolean test) {
         this.test = test;
-    }
-    
-    public String getTestMode() {
-        return testMode;
     }
     
     public void setTestMode(String testMode) {
@@ -275,10 +233,6 @@ public class CrawlerManager {
     
     public void setInterval(String interval) {
         this.interval = interval;
-    }
-    
-    public String getInterval() {
-        return interval;
     }
     
     public String getUserAgentString() {
@@ -297,50 +251,26 @@ public class CrawlerManager {
         this.crawlStorageFolder = crawlStorageFolder;
     }
     
-    public int getNumberOfCrawlers() {
-        return numberOfCrawlers;
-    }
-    
     public void setNumberOfCrawlers(int numberOfCrawlers) {
         if (numberOfCrawlers > 0) {
             this.numberOfCrawlers = numberOfCrawlers;
         }
     }
     
-    public int getMaxDepthOfCrawling() {
-        return maxDepthOfCrawling;
-    }
-    
     public void setMaxDepthOfCrawling(int maxDepthOfCrawling) {
         this.maxDepthOfCrawling = maxDepthOfCrawling;
     }
     
-    public int getPolitenessDelay() {
-        return politenessDelay;
+    public void setMaxCrawledPages(int maxCrawledPages) {
+        this.maxCrawledPages = maxCrawledPages;
     }
     
     public void setPolitenessDelay(int politenessDelay) {
         this.politenessDelay = politenessDelay;
     }
     
-    public boolean isIncludeHttpsPages() {
-        return includeHttpsPages;
-    }
-    
     public void setIncludeHttpsPages(boolean includeHttpsPages) {
         this.includeHttpsPages = includeHttpsPages;
-    }
-    
-    public boolean isIncludeBinaryContentInCrawling() {
-        return includeBinaryContentInCrawling;
-    }
-    
-    public void setIncludeBinaryContentInCrawling(boolean includeBinaryContentInCrawling) {
-        this.includeBinaryContentInCrawling = includeBinaryContentInCrawling;
-    }
-    
-    public boolean isResumableCrawling() {
-        return resumableCrawling;
     }
     
     public void setResumableCrawling(boolean resumableCrawling) {

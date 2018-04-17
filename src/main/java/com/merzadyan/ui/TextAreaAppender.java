@@ -10,11 +10,11 @@ public class TextAreaAppender extends WriterAppender {
     private static final Logger LOGGER = Logger.getLogger(TextAreaAppender.class.getName());
     
     private static volatile TextArea textArea;
+    protected static final int LINE_LIMIT = 10000;
+    private int lines = 0;
     
     /**
      * Set the target TextArea for the logging data to be redirected to.
-     *
-     * @param textArea
      */
     public static void setTextArea(final TextArea textArea) {
         TextAreaAppender.textArea = textArea;
@@ -22,8 +22,6 @@ public class TextAreaAppender extends WriterAppender {
     
     /**
      * Format and append the event to the stored TextArea.
-     *
-     * @param event
      */
     @Override
     public void append(LoggingEvent event) {
@@ -36,8 +34,14 @@ public class TextAreaAppender extends WriterAppender {
                         if (textArea.getText().length() == 0) {
                             textArea.setText(message);
                         } else {
+                            // Flush the text if the limit is reached.
+                            if (lines == LINE_LIMIT) {
+                                textArea.clear();
+                            }
+                            
                             textArea.selectEnd();
                             textArea.insertText(textArea.getText().length(), message);
+                            lines = lines++;
                         }
                     }
                 } catch (Exception e) {

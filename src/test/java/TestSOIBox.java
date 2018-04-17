@@ -1,4 +1,4 @@
-import com.merzadyan.stock.Box;
+import com.merzadyan.stock.SOIBox;
 import com.merzadyan.stock.SOIRegistry;
 import com.merzadyan.stock.Stock;
 import org.junit.Assert;
@@ -9,16 +9,16 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.TreeSet;
 
-public class TestBox {
+public class TestSOIBox {
     private static final String IMMEDIATE_DIR = "src/test/resources/ser";
-    private static final String SERIALISED_FILE_PATH = IMMEDIATE_DIR + "/TestBox.ser";
-    private Box box;
+    private static final String SERIALISED_FILE_PATH = IMMEDIATE_DIR + "/TestSOIBox.ser";
+    private SOIBox SOIBox;
     private TreeSet<Stock> set;
     private Stock stock;
     
     @Before
     public void beforeTest() {
-        box = new Box();
+        SOIBox = new SOIBox();
         
         stock = new Stock("BAE Systems", "LSE", "LSE");
         stock.setHistogram(new int[]{1, 2, 3, 4, 5});
@@ -52,7 +52,7 @@ public class TestBox {
     
     @Test
     public void shouldNotContainStockAfterInitialisation() {
-        set = box.set;
+        set = SOIBox.set;
         Assert.assertFalse(set.contains(stock));
     }
     
@@ -79,12 +79,12 @@ public class TestBox {
         boolean existsAndNotEmpty = file.exists() && file.length() > 0;
         Assert.assertTrue(existsAndNotEmpty);
     
-        // Mock app shutdown by resetting the box.
-        box = new Box();
+        // Mock app shutdown by resetting the SOIBox.
+        SOIBox = new SOIBox();
         
-        box = SOIRegistry.deserialise(SERIALISED_FILE_PATH);
-        Assert.assertNotNull(box);
-        Assert.assertNotNull(box.set);
-        Assert.assertTrue(box.set.contains(stock));
+        SOIBox = SOIRegistry.deserialise(SERIALISED_FILE_PATH);
+        Assert.assertNotNull(SOIBox);
+        Assert.assertNotNull(SOIBox.set);
+        Assert.assertTrue(SOIBox.set.contains(stock));
     }
 }

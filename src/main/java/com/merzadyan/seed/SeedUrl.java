@@ -5,8 +5,8 @@ import com.merzadyan.stock.Stock;
 import java.util.Comparator;
 
 public class SeedUrl implements Comparator, Comparable {
-    private String url;
-    private Type type;
+    private final String url;
+    private final Type type;
     
     public enum Type {
         DEFAULT,

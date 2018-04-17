@@ -6,7 +6,7 @@ import com.merzadyan.crawler.CrawlerTerminationListener;
 import com.merzadyan.seed.SeedUrl;
 import com.merzadyan.seed.SeedUrlRegistry;
 import com.merzadyan.stock.DateCategoriser;
-import com.merzadyan.stock.History;
+import com.merzadyan.stock.SOIHistory;
 import com.merzadyan.stock.SOIRegistry;
 import com.merzadyan.stock.Stock;
 import javafx.application.Application;
@@ -114,8 +114,8 @@ public class MainWindow extends Application {
     @FXML
     private ComboBox seedUrlOptionsComboBox;
     private static final String USE_DEFAULT_SEED_URL_ONLY = "USE_DEFAULT_SEED_ONLY",
-                                USE_CUSTOM_SEED_URL_ONLY = "USE_CUSTOM_SEED_URL_ONLY",
-                                USE_BOTH = "USE_BOTH";
+            USE_CUSTOM_SEED_URL_ONLY = "USE_CUSTOM_SEED_URL_ONLY",
+            USE_BOTH = "USE_BOTH";
     @FXML
     private TextField seedUrlTextField;
     
@@ -140,8 +140,6 @@ public class MainWindow extends Application {
     private TextField companyNameTextField,
             tickerSymbolTextField,
             stockExchangeTextField;
-    @FXML
-    private Button addSoiBtn;
     
     /*
      * Config tab.
@@ -157,9 +155,10 @@ public class MainWindow extends Application {
             maxDepthOfCrawlingSlider,
             politenessDelaySlider,
             includeHTTPSPagesSlider,
-            includeBinaryContentCrawlingSlider,
             resumableCrawlingSlider,
             testSlider;
+    @FXML
+    private TextField maxCrawledPagesTextField;
     @FXML
     private ComboBox testModeComboBox;
     
@@ -342,6 +341,28 @@ public class MainWindow extends Application {
                 USE_CUSTOM_SEED_URL_ONLY,
                 USE_BOTH
         );
+        seedUrlOptionsComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            // Get value of seed url options combo box.
+            String option = (String) newValue;
+            if (option == null || option.isEmpty()) {
+                option = USE_DEFAULT_SEED_URL_ONLY;
+            }
+            
+            switch (option) {
+                case USE_DEFAULT_SEED_URL_ONLY:
+                    crawlerManager.setSeedUrlOption(SeedUrl.Option.DEFAULT_ONLY);
+                    break;
+                case USE_CUSTOM_SEED_URL_ONLY:
+                    crawlerManager.setSeedUrlOption(SeedUrl.Option.CUSTOM_ONLY);
+                    break;
+                case USE_BOTH:
+                    crawlerManager.setSeedUrlOption(SeedUrl.Option.BOTH);
+                    break;
+                default:
+                    crawlerManager.setSeedUrlOption(SeedUrl.Option.DEFAULT_ONLY);
+                    break;
+            }
+        });
         
         /*
          * SOI Registry tab.
@@ -489,7 +510,6 @@ public class MainWindow extends Application {
         dataDumpTextField.setText(crawlerManager.getCrawlStorageFolder());
         
         includeHTTPSPagesSlider.setLabelFormatter(binaryLabelFormat);
-        includeBinaryContentCrawlingSlider.setLabelFormatter(binaryLabelFormat);
         resumableCrawlingSlider.setLabelFormatter(binaryLabelFormat);
         
         testModeComboBox.getItems().clear();
@@ -599,26 +619,6 @@ public class MainWindow extends Application {
                 }
             }).start();
             
-            // Get value of seed url options combo box.
-            String option = (String) seedUrlOptionsComboBox.getValue();
-            if (option == null || option.isEmpty()) {
-                option = USE_DEFAULT_SEED_URL_ONLY;
-            }
-            switch (option) {
-                case USE_DEFAULT_SEED_URL_ONLY:
-                    crawlerManager.setSeedUrlOption(SeedUrl.Option.DEFAULT_ONLY);
-                    break;
-                case USE_CUSTOM_SEED_URL_ONLY:
-                    crawlerManager.setSeedUrlOption(SeedUrl.Option.CUSTOM_ONLY);
-                    break;
-                case USE_BOTH:
-                    crawlerManager.setSeedUrlOption(SeedUrl.Option.BOTH);
-                    break;
-                default:
-                    crawlerManager.setSeedUrlOption(SeedUrl.Option.DEFAULT_ONLY);
-                    break;
-            }
-            
             startTimer();
             crawlerManager.startNonBlockingCrawl();
             currentlyCrawling = true;
@@ -650,7 +650,8 @@ public class MainWindow extends Application {
                     .sorted((o1, o2) -> -o1.compareTo(o2))
                     .forEach(File::delete);
         } catch (IOException e) {
-            e.printStackTrace();
+            // Ignore exception - exception is due to data dump file/directory is already deleted
+            // therefore cannot be deleted.
         }
     }
     
@@ -693,9 +694,14 @@ public class MainWindow extends Application {
         
         crawlerManager.setNumberOfCrawlers((int) numberOfCrawlersSlider.getValue());
         crawlerManager.setMaxDepthOfCrawling((int) maxDepthOfCrawlingSlider.getValue());
+        // Wrap retrieval of max crawled pages for exceptions.
+        try {
+            crawlerManager.setMaxCrawledPages(Integer.parseInt(maxCrawledPagesTextField.getText().trim()));
+        } catch (NumberFormatException e) {
+            // Ignore exception.
+        }
         crawlerManager.setPolitenessDelay((int) politenessDelaySlider.getValue());
         crawlerManager.setIncludeHttpsPages(adapt(includeHTTPSPagesSlider.getValue()));
-        crawlerManager.setIncludeBinaryContentInCrawling(adapt(includeBinaryContentCrawlingSlider.getValue()));
         crawlerManager.setResumableCrawling(adapt(resumableCrawlingSlider.getValue()));
         
         crawlerManager.setTest(adapt(testSlider.getValue()));
@@ -719,9 +725,9 @@ public class MainWindow extends Application {
         dataDumpTextField.setText(CrawlerManager.DEFAULT.DEFAULT_CRAWL_STORAGE_FOLDER);
         numberOfCrawlersSlider.setValue(CrawlerManager.DEFAULT.DEFAULT_NUMBER_OF_CRAWLERS);
         maxDepthOfCrawlingSlider.setValue(CrawlerManager.DEFAULT.DEFAULT_MAX_DEPTH_OF_CRAWLING);
+        maxCrawledPagesTextField.setText(CrawlerManager.DEFAULT.DEFAULT_MAX_CRAWLED_PAGES + "");
         politenessDelaySlider.setValue(CrawlerManager.DEFAULT.DEFAULT_POLITENESS_DELAY);
         includeHTTPSPagesSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_INCLUDE_HTTPS_PAGES));
-        includeBinaryContentCrawlingSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_INCLUDE_BINARY_CONTENT_IN_CRAWLING));
         resumableCrawlingSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_RESUMABLE_CRAWLING));
         testSlider.setValue(adapt(CrawlerManager.DEFAULT.DEFAULT_TEST));
         testModeComboBox.setValue(CrawlerManager.DEFAULT.DEFAULT_TEST_MODE);
@@ -779,9 +785,6 @@ public class MainWindow extends Application {
     
     /**
      * Converts boolean value to corresponding double value.
-     *
-     * @param bool
-     * @return
      */
     private double adapt(boolean bool) {
         return bool ? 1d : 0d;
@@ -789,9 +792,6 @@ public class MainWindow extends Application {
     
     /**
      * Converts double value to corresponding boolean value.
-     *
-     * @param dbl
-     * @return
      */
     private boolean adapt(double dbl) {
         return dbl == 1d;
@@ -855,10 +855,10 @@ public class MainWindow extends Application {
         try {
             fileInputStream = new FileInputStream(SERIALISED_FILE_PATH);
             objectInputStream = new ObjectInputStream(fileInputStream);
-            History history = (History) objectInputStream.readObject();
-            if (history != null && history.getLastSaved() != null && history.getLastSaved().size() > 0) {
+            SOIHistory SOIHistory = (SOIHistory) objectInputStream.readObject();
+            if (SOIHistory != null && SOIHistory.getLastSaved() != null && SOIHistory.getLastSaved().size() > 0) {
                 LOGGER.debug("#deserialise: read object out.");
-                return history.getLastSaved();
+                return SOIHistory.getLastSaved();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -903,9 +903,9 @@ public class MainWindow extends Application {
         try {
             fileOutputStream = new FileOutputStream(SERIALISED_FILE_PATH);
             objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            History history = new History();
-            history.setLastSaved(stocksAsTimeProgresses);
-            objectOutputStream.writeObject(history);
+            SOIHistory SOIHistory = new SOIHistory();
+            SOIHistory.setLastSaved(stocksAsTimeProgresses);
+            objectOutputStream.writeObject(SOIHistory);
             LOGGER.debug("serialise: wrote object in.");
         } catch (Exception e) {
             e.printStackTrace();

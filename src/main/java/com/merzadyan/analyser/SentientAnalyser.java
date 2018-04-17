@@ -25,8 +25,6 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 public class SentientAnalyser {
-    // org.apache.log4j.Logger.
-    private static final Logger LOGGER = Logger.getLogger(SentientAnalyser.class.getName());
     
     private static final StanfordCoreNLP sentimentPipeline = getSentimentPipeline();
     
@@ -86,8 +84,6 @@ public class SentientAnalyser {
     
     /**
      * Matches yyyy-mm-dd format.
-     *
-     * @return
      */
     private static Pattern getDateFormatRegex() {
         return Pattern.compile("^2018-(0[1-9]|1[0-2])-(0[0-9]|1[0-9]|2[0-9]|3[0-1])?$");
@@ -95,8 +91,6 @@ public class SentientAnalyser {
     
     /**
      * Matches yyyy-mm-ddThh:mm format.
-     *
-     * @return
      */
     private static Pattern getDateTimeFormatRegex() {
         return Pattern.compile("^2018-(0[1-9]|1[0-2])-(0[0-9]|1[0-9]|2[0-9]|3[0-1])(T(0[1-9]|1[1-9]|2[1-3]):(0[1-9]|1[1-9]|2[1-9]|3[1-9]|4[1-9]|5[1-9]))?$");
@@ -106,8 +100,6 @@ public class SentientAnalyser {
      * Taken from https://blog.openshift
      * .com/day-20-stanford-corenlp-performing-sentiment-analysis-of-twitter-using-java/
      *
-     * @param text
-     * @param text
      * @return fine-grain sentiment score in a rage of 0-4; returns -1 in the case of an error.
      * <ol start=0>
      * <li>Negative</li>
@@ -155,8 +147,6 @@ public class SentientAnalyser {
      * Extracts the company name based on the reasonable assumption that the company name is usually present
      * in the text of the article.
      *
-     * @param text
-     * @param trie
      * @return null in the case of an error or target company was not found in the (text| soi.txt| trie).
      * @throws Exception unknown/unexpected emitted from Stanford CoreNLP.
      */
@@ -206,7 +196,6 @@ public class SentientAnalyser {
     }
     
     /**
-     * @param text
      * @return date in the format yyyy-mm-dd. Null in the case of errors.
      */
     public static String findSUTime(String text) {

@@ -1,4 +1,4 @@
-import com.merzadyan.stock.History;
+import com.merzadyan.stock.SOIHistory;
 import com.merzadyan.stock.Stock;
 import com.merzadyan.ui.MainWindow;
 import org.junit.Assert;
@@ -10,18 +10,18 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class TestHistory {
+public class TestSOIHistory {
     private static final String IMMEDIATE_DIR = "src/test/resources/ser";
-    private static final String SERIALISED_FILE_PATH = IMMEDIATE_DIR + "/TestHistory.ser";
+    private static final String SERIALISED_FILE_PATH = IMMEDIATE_DIR + "/TestSOIHistory.ser";
     private HashMap<String, ArrayList<Stock>> lastSaved;
-    private History history;
+    private SOIHistory SOIHistory;
     private ArrayList<Stock> list;
     private Stock stock;
     
     @Before
     public void beforeTest() {
         lastSaved = new HashMap<>();
-        history = new History();
+        SOIHistory = new SOIHistory();
         stock = new Stock("BAE Systems", "LSE", "LSE");
         stock.setHistogram(new int[]{1, 2, 3, 4, 5});
         stock.setLatestSentimentScore(4);
@@ -55,7 +55,7 @@ public class TestHistory {
     
     @Test
     public void shouldNotContainStockAfterInitialisation() {
-        lastSaved = history.getLastSaved();
+        lastSaved = SOIHistory.getLastSaved();
         Assert.assertFalse(lastSaved.containsKey(stock.getCompany()));
         Assert.assertFalse(lastSaved.containsValue(list));
     }

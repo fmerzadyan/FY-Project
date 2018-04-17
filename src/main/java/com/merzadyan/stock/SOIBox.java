@@ -6,10 +6,10 @@ import java.util.TreeSet;
 /**
  * Used to maintain a persistent list of SOI for the SOIRegistry tab.
  */
-public class Box implements Serializable {
+public class SOIBox implements Serializable {
     public TreeSet<Stock> set;
     
-    public Box() {
+    public SOIBox() {
         set = new TreeSet<>();
     }
 }

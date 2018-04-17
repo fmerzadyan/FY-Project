@@ -36,9 +36,9 @@ public class SOIRegistry {
      * References the location of the serialised file containing user-defined stocks of interest.
      * The file holds Stock objects.
      */
-    public static final String SERIALISED_SOI_FILE_PATH = SERIALISED_DIR + "/box.ser";
+    public static final String SERIALISED_SOI_FILE_PATH = SERIALISED_DIR + "/SOIBox.ser";
     
-    private Box box;
+    private SOIBox SOIBox;
     
     private TreeSet<Stock> ftse100Set;
     
@@ -55,9 +55,9 @@ public class SOIRegistry {
         }
         
         try {
-            box = deserialise();
-            if (box == null) {
-                box = new Box();
+            SOIBox = deserialise();
+            if (SOIBox == null) {
+                SOIBox = new SOIBox();
             }
         } catch (Exception e) {
             LOGGER.debug(e);
@@ -219,9 +219,9 @@ public class SOIRegistry {
      * @param stock
      */
     public synchronized void add(Stock stock) {
-        boolean isAdded = box.set.add(stock);
+        boolean isAdded = SOIBox.set.add(stock);
         if (isAdded) {
-            serialise(box.set);
+            serialise(SOIBox.set);
         }
     }
     
@@ -232,14 +232,14 @@ public class SOIRegistry {
      * @param stock
      */
     public synchronized void remove(Stock stock) {
-        boolean isRemoved = box.set.remove(stock);
+        boolean isRemoved = SOIBox.set.remove(stock);
         if (isRemoved) {
-            serialise(box.set);
+            serialise(SOIBox.set);
         }
     }
     
     public TreeSet<Stock> getSoiSet() {
-        return box.set;
+        return SOIBox.set;
     }
     
     public TreeSet<Stock> getFtse100Set() {
@@ -257,9 +257,9 @@ public class SOIRegistry {
         try {
             fileOutputStream = new FileOutputStream(SERIALISED_SOI_FILE_PATH);
             objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            Box box = new Box();
-            box.set.addAll(set);
-            objectOutputStream.writeObject(box);
+            SOIBox SOIBox = new SOIBox();
+            SOIBox.set.addAll(set);
+            objectOutputStream.writeObject(SOIBox);
             LOGGER.debug("#serialise: wrote object in.");
         } catch (Exception e) {
             e.printStackTrace();
@@ -282,19 +282,19 @@ public class SOIRegistry {
         }
     }
     
-    private Box deserialise() {
+    private SOIBox deserialise() {
         return deserialise(SERIALISED_SOI_FILE_PATH);
     }
     
-    public static Box deserialise(final String SERIALISED_SOI_FILE_PATH) {
+    public static SOIBox deserialise(final String SERIALISED_SOI_FILE_PATH) {
         FileInputStream fileInputStream = null;
         ObjectInputStream objectInputStream = null;
         try {
             fileInputStream = new FileInputStream(SERIALISED_SOI_FILE_PATH);
             objectInputStream = new ObjectInputStream(fileInputStream);
-            Box box = (Box) objectInputStream.readObject();
+            SOIBox SOIBox = (SOIBox) objectInputStream.readObject();
             LOGGER.debug("#deserialise: read object out.");
-            return box;
+            return SOIBox;
         } catch (Exception e) {
             // e.printStackTrace();
         } finally {

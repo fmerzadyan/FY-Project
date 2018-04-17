@@ -17,20 +17,18 @@ import org.apache.log4j.Logger;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @SuppressWarnings("unchecked")
 public class ChartWindow extends Application {
-    private static final Logger LOGGER = Logger.getLogger(ChartWindow.class.getName());
     
     @FXML
     private LineChart<String, Number> lineChart;
-    private CategoryAxis lineChartXAxis = new CategoryAxis();
-    private NumberAxis lineChartYAxis = new NumberAxis();
     
     @FXML
     private BarChart<Number, Number> barChart;
-    private CategoryAxis barChartXAxis = new CategoryAxis();
-    private NumberAxis barChartYAxis = new NumberAxis();
+    private final CategoryAxis barChartXAxis = new CategoryAxis();
+    private final NumberAxis barChartYAxis = new NumberAxis();
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -85,7 +83,7 @@ public class ChartWindow extends Application {
         lineChart.getData().addAll(sentimentValueSeries);
         
         
-        barChart.setTitle(latestStockData.getCompany());
+        barChart.setTitle(Objects.requireNonNull(latestStockData).getCompany());
         barChartXAxis.setLabel("Distribution");
         barChartYAxis.setLabel("Frequency");
         barChart.setBarGap(0);

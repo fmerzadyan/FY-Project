@@ -1,11 +1,8 @@
 package com.merzadyan.seed;
 
-import org.apache.log4j.Logger;
-
 import java.util.TreeSet;
 
 public class SeedUrlRegistry {
-    private static final Logger LOGGER = Logger.getLogger(SeedUrlRegistry.class.getName());
     
     private static final SeedUrlRegistry instance = new SeedUrlRegistry();
     
