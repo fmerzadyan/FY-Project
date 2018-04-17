@@ -126,7 +126,7 @@ public class Crawler extends WebCrawler {
         
         // If the href contains one of the file extensions (to not crawl) then do not visit that page.
         if (matchesFilter) {
-            LOGGER.debug("Not visiting: " + url.getURL() + " as matchesFilter: true.");
+            LOGGER.debug("#shouldVisit: not visiting: " + url.getURL() + " as matchesFilter: true.");
             return false;
         }
         
@@ -139,13 +139,13 @@ public class Crawler extends WebCrawler {
             // Using #firstMatch for optimisation purposes - as long as there is
             // at least one mention of a SOI then it is unnecessary to process further.
             if (!firstMatch) {
-                LOGGER.debug("Not visiting: " + url.getURL() + " as page does not have a reference to a company listed " +
+                LOGGER.debug("#shouldVisit: not visiting: " + url.getURL() + " as page does not have a reference to a company listed " +
                         "in the trie.");
             }
             return firstMatch;
         }
         
-        LOGGER.debug("Not visiting: " + url.getURL() + " as referring page is not an instance of HtmlParseData.");
+        LOGGER.debug("#shouldVisit: not visiting: " + url.getURL() + " as referring page is not an instance of HtmlParseData.");
         // Defaults to false as referring page is not an instance of HtmlParseData.
         return false;
     }
@@ -158,7 +158,7 @@ public class Crawler extends WebCrawler {
     public void visit(Page page) {
         String url = page.getWebURL().getURL();
         // ++linksVisited has a prefix operation - increment variable and get value.
-        LOGGER.debug("links visited: " + ++linksVisited + " URL: " + url);
+        LOGGER.debug("#visit: links visited: " + ++linksVisited + " URL: " + url);
         
         if (page.getParseData() instanceof HtmlParseData) {
             HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
@@ -167,9 +167,9 @@ public class Crawler extends WebCrawler {
             Element body = document.body();
             String contentText = body.text();
             Set<WebURL> links = htmlParseData.getOutgoingUrls();
-            LOGGER.debug("URL: " + url);
-            LOGGER.debug("Number of outgoing links: " + links.size());
-            LOGGER.debug("Text length: " + contentText.length());
+            LOGGER.debug("#visit: url: " + url);
+            LOGGER.debug("#visit: number of outgoing links: " + links.size());
+            LOGGER.debug("#visit: text length: " + contentText.length());
             
             String extractedDate = SentientAnalyser.findSUTime(contentText);
             if (extractedDate == null) {
@@ -178,35 +178,35 @@ public class Crawler extends WebCrawler {
             
             try {
                 LocalDate date = LocalDate.parse(extractedDate);
-                LOGGER.debug("date: " + date + " startDate: " + startDate + " endDate: " + endDate);
+                LOGGER.debug("#visit: date: " + date + " startDate: " + startDate + " endDate: " + endDate);
                 if (date.isBefore(startDate) || date.isAfter(endDate)) {
-                    LOGGER.debug("Not in-between.");
+                    LOGGER.debug("#visit: not in-between.");
                     return;
                 }
             } catch (DateTimeParseException e) {
-                LOGGER.error("Failed to parse: " + extractedDate + " into a LocalDate.");
+                LOGGER.error("#visit: failed to parse: " + extractedDate + " into a LocalDate.");
                 e.printStackTrace();
                 return;
             }
             
-            LOGGER.debug("In-between.");
+            LOGGER.debug("#visit: in-between.");
             
             // #identifyOrganisationEntity returns a non-null result if the title contains a SOI.
             String organisationEntity;
             try {
                 organisationEntity = SentientAnalyser.identifyOrganisationEntity(contentText, trie);
             } catch (Exception e) {
-                LOGGER.error("Failed to identify organisational entity in article.");
+                LOGGER.error("#visit: failed to identify organisational entity in article.");
                 e.printStackTrace();
                 return;
             }
             
             if (organisationEntity == null) {
-                LOGGER.debug("Failed to identify an organisational entity in article.");
+                LOGGER.debug("#visit: failed to identify an organisational entity in article.");
                 return;
             }
             
-            LOGGER.debug("Company: " + organisationEntity);
+            LOGGER.debug("#visit: company: " + organisationEntity);
             
             Stock stock = new Stock();
             stock.setCompany(organisationEntity);
@@ -220,7 +220,7 @@ public class Crawler extends WebCrawler {
                 e.printStackTrace();
             }
             
-            LOGGER.debug("Sentiment value: " + score);
+            LOGGER.debug("#visit: sentiment value: " + score);
             // Disregard -1 returns.
             if (score != -1) {
                 if (soiScoreMap == null) {
@@ -277,7 +277,7 @@ public class Crawler extends WebCrawler {
                 }
             }
             
-            LOGGER.debug("Stock: " + stock.getCompany() + " Histogram: " + Arrays.toString(histogram) +
+            LOGGER.debug("#onBeforeExit: Stock: " + stock.getCompany() + " Histogram: " + Arrays.toString(histogram) +
                     " Predominant sentiment: " + highestFrequency);
             // Mark stock with the latest sentiment score.
             stock.setLatestSentimentScore(indexOfHighestFrequency);

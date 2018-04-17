@@ -165,6 +165,21 @@ public class CrawlerManager {
             }
         }
         
+        LOGGER.debug("#startNonBlockingCrawl. " + "\n" +
+                "Configs: " + "\n" +
+                "process interval: " + interval + "\n" +
+                " user agent name: " + userAgentString + "\n" +
+                " data dump: " + crawlStorageFolder + "\n" +
+                " number of crawlers: " + numberOfCrawlers + "\n" +
+                " max depth of crawling: " + maxDepthOfCrawling + "\n" +
+                " politeness delay (ms): " + politenessDelay + "\n" +
+                " include HTTPs pages: " + includeHttpsPages + "\n" +
+                " include binary content crawling: " + includeBinaryContentInCrawling + "\n" +
+                " resumable crawling: " + resumableCrawling + "\n" +
+                " enable test mode: " + test + "\n" +
+                " test mode: " + testMode + "\n"
+        );
+        
         // A crawler factory is required to feed data into the crawler.
         // Runs the crawlers in a non-blocking thread.
         controller.startNonBlocking(crawlerFactory, numberOfCrawlers);
