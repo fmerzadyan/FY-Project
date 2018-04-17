@@ -13,6 +13,12 @@ public class SeedUrl implements Comparator, Comparable {
         USER_DEFINED
     }
     
+    public enum Option {
+        DEFAULT_ONLY,
+        CUSTOM_ONLY,
+        BOTH
+    }
+    
     public SeedUrl(String url, Type type) {
         this.url = url;
         this.type = type;

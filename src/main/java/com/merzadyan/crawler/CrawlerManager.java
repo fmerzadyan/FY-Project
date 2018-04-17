@@ -1,8 +1,8 @@
 package com.merzadyan.crawler;
 
-import com.merzadyan.stock.DateCategoriser;
 import com.merzadyan.seed.SeedUrl;
 import com.merzadyan.seed.SeedUrlRegistry;
+import com.merzadyan.stock.DateCategoriser;
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
@@ -59,6 +59,7 @@ public class CrawlerManager {
     private CrawlController controller;
     private CrawlerFactory crawlerFactory;
     
+    private SeedUrl.Option seedUrlOption;
     private HashSet<String> seedUrlSet;
     private boolean test;
     private String testMode;
@@ -157,10 +158,27 @@ public class CrawlerManager {
                     break;
             }
         } else {
-            LOGGER.debug("(Using default configs.");
             for (SeedUrl url : SeedUrlRegistry.getInstance().getUrlSet()) {
-                if (url.getType() == SeedUrl.Type.DEFAULT) {
-                    controller.addSeed(url.getUrl());
+                switch (seedUrlOption) {
+                    case DEFAULT_ONLY:
+                        if (url.getType() == SeedUrl.Type.DEFAULT) {
+                            LOGGER.debug("#startNonBlockingCrawl: adding default seed URL: " + url.getUrl());
+                            controller.addSeed(url.getUrl());
+                        }
+                        break;
+                    case CUSTOM_ONLY:
+                        if (url.getType() == SeedUrl.Type.USER_DEFINED) {
+                            LOGGER.debug("#startNonBlockingCrawl: adding custom seed URL: " + url.getUrl());
+                            controller.addSeed(url.getUrl());
+                        }
+                        break;
+                    case BOTH:
+                        LOGGER.debug("#startNonBlockingCrawl: adding " + url.getType() + " seed URL: " + url.getUrl());
+                        controller.addSeed(url.getUrl());
+                        break;
+                    default:
+                        // Should not be the case that it gets called ever.
+                        break;
                 }
             }
         }
@@ -193,6 +211,14 @@ public class CrawlerManager {
         // Shuts down the crawlers.
         controller.shutdown();
         controller.waitUntilFinish();
+    }
+    
+    public void setSeedUrlOption(SeedUrl.Option seedUrlOption) {
+        this.seedUrlOption = seedUrlOption;
+    }
+    
+    public SeedUrl.Option getSeedUrlOption() {
+        return seedUrlOption;
     }
     
     public void addSeedUrl(String seedUrl) {

@@ -113,6 +113,9 @@ public class MainWindow extends Application {
     
     @FXML
     private ComboBox seedUrlOptionsComboBox;
+    private static final String USE_DEFAULT_SEED_URL_ONLY = "USE_DEFAULT_SEED_ONLY",
+                                USE_CUSTOM_SEED_URL_ONLY = "USE_CUSTOM_SEED_URL_ONLY",
+                                USE_BOTH = "USE_BOTH";
     @FXML
     private TextField seedUrlTextField;
     
@@ -192,7 +195,6 @@ public class MainWindow extends Application {
         
         // Disable resizing ability of the window.
         primaryStage.setResizable(false);
-        primaryStage.setAlwaysOnTop(true);
         primaryStage.show();
         
         // primaryStage.setAlwaysOnTop(true);
@@ -336,9 +338,9 @@ public class MainWindow extends Application {
         seedUrlOptionsComboBox.getItems().clear();
         // TODO: consider using these options or seed url options combo box.
         seedUrlOptionsComboBox.getItems().addAll(
-                "Use default seed URLs only.",
-                "Use both default and custom seed URLs.",
-                "Use custom seed URLs only."
+                USE_DEFAULT_SEED_URL_ONLY,
+                USE_CUSTOM_SEED_URL_ONLY,
+                USE_BOTH
         );
         
         /*
@@ -598,6 +600,26 @@ public class MainWindow extends Application {
                 }
             }).start();
             
+            // Get value of seed url options combo box.
+            String option = (String) seedUrlOptionsComboBox.getValue();
+            if (option == null || option.isEmpty()) {
+                option = USE_DEFAULT_SEED_URL_ONLY;
+            }
+            switch (option) {
+                case USE_DEFAULT_SEED_URL_ONLY:
+                    crawlerManager.setSeedUrlOption(SeedUrl.Option.DEFAULT_ONLY);
+                    break;
+                case USE_CUSTOM_SEED_URL_ONLY:
+                    crawlerManager.setSeedUrlOption(SeedUrl.Option.CUSTOM_ONLY);
+                    break;
+                case USE_BOTH:
+                    crawlerManager.setSeedUrlOption(SeedUrl.Option.BOTH);
+                    break;
+                default:
+                    crawlerManager.setSeedUrlOption(SeedUrl.Option.DEFAULT_ONLY);
+                    break;
+            }
+            
             startTimer();
             crawlerManager.startNonBlockingCrawl();
             currentlyCrawling = true;
@@ -692,6 +714,7 @@ public class MainWindow extends Application {
      * Resets the UI controls in the configs tab.
      */
     public void resetConfigs() {
+        seedUrlOptionsComboBox.setValue(USE_DEFAULT_SEED_URL_ONLY);
         processIntervalComboBox.setValue(CrawlerManager.DEFAULT.DEFAULT_INTERVAL);
         userAgentNameTextField.setText(CrawlerManager.DEFAULT.DEFAULT_USER_AGENT_STRING);
         dataDumpTextField.setText(CrawlerManager.DEFAULT.DEFAULT_CRAWL_STORAGE_FOLDER);
